@@ -99,8 +99,8 @@ a.arrow {
 
 /* Header, top bar, navigation */
 #top {
-  height: 64px;
-  line-height: 64px;
+  height: 90px;
+  line-height: 90px;
   font-size: 17px;
   font-family: 'Barlow';
   font-weight: 500;
@@ -112,7 +112,7 @@ a.arrow {
   flex: 1;
 }
 #top a.rocketrides {
-  display: inline-block;
+  display: block;
   min-width: 251px;
   height: 50px;
   padding-left: 75px;
