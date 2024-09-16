@@ -23,7 +23,7 @@ const PilotSchema = new Schema({
   },
   type: {
     type: String,
-    default: 'individual',
+    default: 'company',
     enum: ['individual', 'company']
   },
   firstName: String,
@@ -32,7 +32,7 @@ const PilotSchema = new Schema({
   postalCode: String,
   city: String,
   state: { type: String}, 
-  country: { type: String, default: 'US' },
+  country: { type: String, default: 'DE' },
   created: { type: Date, default: Date.now },
   rocket: {
     model: String,

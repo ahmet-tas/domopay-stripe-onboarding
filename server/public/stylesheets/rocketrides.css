@@ -275,7 +275,7 @@ footer {
 
 /* Forms */
 .form {
-  width: 540px;
+  width: 620px;
   margin: 15px auto;
 }
 
@@ -386,7 +386,7 @@ fieldset .row:not(.hidden) ~ .row {
 fieldset .row::before {
   content: attr(label);
   width: 130px;
-  padding-right: 20px;
+  padding-right: 110px;
   color: #8798ab;
   font-weight: 500;
   text-align: right;
@@ -534,6 +534,22 @@ header input[type='submit'] {
 
 form a.button {
   text-align: center;
+}
+
+/* Produktinformationen */
+.product-information {
+  margin-bottom: 15px;
+  border: 2px solid #e6ebf1;
+  border-radius: 5px;
+  padding: 20px 20px 20px 25px;
+  background-size: 80px auto;
+}
+
+.product-information p {
+  color: #525f7f;
+  font-size: 14px;
+  text-align: center;
+  margin: 0;
 }
 
 /* Stripe information */

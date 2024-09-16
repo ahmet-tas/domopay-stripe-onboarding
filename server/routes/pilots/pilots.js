@@ -76,7 +76,7 @@ router.post('/rides', pilotRequired, async (req, res, next) => {
   const ride = new Ride({
     pilot: pilot.id,
     passenger: passenger.id,
-    // Generate a random amount between $10 and $100 for this ride
+    // Generate a random amount between €10 and €100 for this ride
     amount: getRandomInt(1000, 10000),
   });
   // Save the ride

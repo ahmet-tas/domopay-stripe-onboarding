@@ -5,10 +5,10 @@ document.body.addEventListener('change', function(e) {
   }
 
   // Show the correct header for the select legal entity
-  var headerPrefix = e.target.value === 'individual' ? 'Personal' : 'Company';
+  var headerPrefix = e.target.value === 'individual' ? 'Persönliche' : 'Firmen';
   document.querySelector(
     '.pilot-header#account-info'
-  ).innerText = `${headerPrefix} information`;
+  ).innerText = `${headerPrefix} Daten`;
 
   // Show any fields that apply to the new pilot type
   var pilotInfoRows = document.querySelectorAll('.pilot-info');
