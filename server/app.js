@@ -81,8 +81,8 @@ app.get('/', (req, res) => {
   res.render('index');
 });
 
-// Respond to the Google Cloud health check
-app.get('/_ah/health', (req, res) => {
+// Respond to a health check
+app.get('/health', (req, res) => {
   res.type('text').send('ok');
 });
 

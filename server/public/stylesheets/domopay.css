@@ -113,10 +113,10 @@ a.arrow {
 }
 #top a.rocketrides {
   display: inline-block;
-  min-width: 215px;
-  height: 20px;
+  min-width: 251px;
+  height: 50px;
   padding-left: 75px;
-  /* background: url(/images/logo-domoforce.svg) left center no-repeat; */
+  background: url(/images/domoforce_logo_1x_light.png) left center no-repeat;
 }
 
 #top .links a {

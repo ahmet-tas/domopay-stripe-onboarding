@@ -42,7 +42,7 @@ block content
             .row
               .cell.name= ride.passenger.displayName()
               .cell.date= moment(new Date(Date.parse(ride.created))).calendar()
-              .cell.price $#{(ride.amountForPilot() / 100).toFixed(2)}
+              .cell.price €#{(ride.amountForPilot() / 100).toFixed(2)}
 
 block footer
   .annotation.card.dashboard-banner(class=(showBanner ? '' : 'hidden'))
