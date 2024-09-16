@@ -97,7 +97,7 @@ router.get('/onboarded', pilotRequired, async (req, res, next) => {
       req.user.onboardingComplete = true;
       await req.user.save();
 
-      // Redirect to the Rocket Rides dashboard
+      // Redirect to the domopay dashboard
       req.flash('showBanner', 'true');
       res.redirect('/pilots/dashboard');
     } else {

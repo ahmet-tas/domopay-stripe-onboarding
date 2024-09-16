@@ -76,7 +76,7 @@ app.use('/api/settings', require('./routes/api/settings'));
 app.use('/api/rides', require('./routes/api/rides'));
 app.use('/api/passengers', require('./routes/api/passengers'));
 
-// Index page for Rocket Rides
+// Index page for domopay
 app.get('/', (req, res) => {
   res.render('index');
 });
@@ -114,5 +114,5 @@ app.use((err, req, res) => {
 
 // Start the server on the correct port
 const server = app.listen(process.env.PORT || config.port, () => {
-  console.log('🚀 Rocket Rides server started:', config.publicDomain);
+  console.log('🚀 domopay server started:', config.publicDomain);
 });

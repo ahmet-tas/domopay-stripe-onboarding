@@ -109,10 +109,10 @@ block footer
 
     case step
       when 'account'
-        p To get started, Rocket Rides will create an account for their pilots on their own backend. The platform can use any kind of authentication here, like email or OAuth. A real product would typically have terms of service and a privacy policy linked here as well.
+        p To get started, domopay will create an account for their pilots on their own backend. The platform can use any kind of authentication here, like email or OAuth. A real product would typically have terms of service and a privacy policy linked here as well.
 
       when 'profile'
-        p The platform can choose to request additional information from the user before it collects any payments details. Here, Rocket Rides asks a few questions about pilots and their rockets. This information will be stored in the platform’s database.
+        p The platform can choose to request additional information from the user before it collects any payments details. Here, domopay asks a few questions about pilots and their rockets. This information will be stored in the platform’s database.
 
       when 'payments'
         p This platform uses #[a(href='https://stripe.com/connect/account-types') Connect Express] accounts to pay its pilots. We’ll pass some of the user information we have collected to Express in order to make onboarding as simple as possible. This app is in test mode, so no real payments are going through. Use the Stripe test Visa debit card number as a payout method: #[strong 4000 0566 5566 5556]
