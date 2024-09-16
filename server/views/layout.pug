@@ -17,7 +17,7 @@ html
           .links
             if pilot.stripeAccountId && pilot.onboardingComplete
               a(href='/pilots/dashboard') Dashboard
-            a(href='/pilots/logout') Log out
+            a(href='/pilots/logout') Abmelden
         else
           .logo
             a.rocketrides(href='/')
@@ -31,4 +31,4 @@ html
     footer
       block footer
 
-    script(src='/javascripts/rocketrides.js')
+    script(src='/javascripts/domopay.js')

@@ -22,7 +22,7 @@ function pilotRequired(req, res, next) {
 
 // Helper function: get the currency symbol for the given country ISO code
 const getCurrencySymbol = currency => {
-  const currencySymbol = new Intl.NumberFormat('en', {
+  const currencySymbol = new Intl.NumberFormat('de', {
     currency,
     style: 'currency'
   }).formatToParts(0).find(part => part.type === 'currency');
@@ -91,7 +91,7 @@ router.post('/rides', pilotRequired, async (req, res, next) => {
     }
     let charge;
     // Accounts created in Japan/Germany have the `full` service agreement and must create their own card payments
-    if (pilot.country === 'JP' || pilot.country === 'DE') {
+    if (pilot.country === 'DE') {
       // Create a Destination Charge to the pilot's account
       charge = await stripe.charges.create({
         source: source,
@@ -261,13 +261,13 @@ passport.use('pilot-login', new LocalStrategy({
   try {
     user = await Pilot.findOne({email});
     if (!user) {
-      return done(null, false, { message: 'Unknown user' });
+      return done(null, false, { message: 'Unbekannter Benutzer' });
     }
   } catch (err) {
     return done(err);
   }
   if (!user.validatePassword(password)) {
-    return done(null, false, { message: 'Invalid password' });
+    return done(null, false, { message: 'Falsches Passwort' });
   }
   return done(null, user);
 }));

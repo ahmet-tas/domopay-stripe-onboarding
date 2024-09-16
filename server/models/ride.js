@@ -15,7 +15,7 @@ const RideSchema = new Schema({
   pickupTime: { type: Date, default: Date.now },
   dropoffTime: { type: Date, default: new Date((new Date).getTime() + Math.floor(10 * Math.random()) * 60000) },
   amount: Number,
-  currency: { type: String, default: 'usd' },
+  currency: { type: String, default: 'eur' },
   created: { type: Date, default: Date.now },
 
   // Stripe Payment Intent ID corresponding to this ride.

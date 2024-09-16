@@ -116,7 +116,7 @@ a.arrow {
   min-width: 215px;
   height: 20px;
   padding-left: 75px;
-  background: url(/images/rocketrides.svg) left center no-repeat;
+  /* background: url(/images/logo-domoforce.svg) left center no-repeat; */
 }
 
 #top .links a {
@@ -125,7 +125,7 @@ a.arrow {
 }
 
 header .button.primary {
-  width: 200px;
+  width: 300px;
 }
 
 h1.title {
@@ -142,7 +142,7 @@ h1.title.short-form {
 
 /* Banners */
 .banner {
-  background: #15b67c;
+  background: #54B5D5;
   color: white;
   width: 100%;
   min-height: 44px;
@@ -486,7 +486,7 @@ input[type='submit'].primary {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
-  background: #15b67c;
+  background: #54B5D5;
   color: white;
   height: 44px;
   margin: 30px 0 0 0;
@@ -696,7 +696,7 @@ form a.button {
 }
 
 .user .block a {
-  color: #219f72;
+  color: #54B5D5;
 }
 
 .user .block.profile {
@@ -786,7 +786,7 @@ form a.button {
   right: calc(100% - 15px);
   width: 10px;
   height: 10px;
-  background: #15b67c;
+  background: #54B5D5;
   border-radius: 10px;
 }
 
