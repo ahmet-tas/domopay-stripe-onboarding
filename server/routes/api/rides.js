@@ -68,6 +68,7 @@ router.post('/', async (req, res, next) => {
       customer: passenger.stripeCustomerId,
       payment_method: latest_pm,
       confirm: true,
+      application_fee_amount: 300, // €3 platform fee
       transfer_data: {
         // Send the amount for the pilot after collecting a 20% platform fee:
         // the `amountForPilot` method simply computes `ride.amount * 0.8`

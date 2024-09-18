@@ -87,7 +87,7 @@ router.get('/authorize', pilotRequired, async (req, res, next) => {
 /**
  * GET /pilots/stripe/onboarded
  *
- * Return endpoint from Stripe onboarding, checks if onboarding has been completed
+ * Return endpoint from Stripe onboarding, checks if onboarding has been completed and creates dummy products in newly created Stripe account.
  */
 router.get('/onboarded', pilotRequired, async (req, res, next) => {
   try {
@@ -99,6 +99,43 @@ router.get('/onboarded', pilotRequired, async (req, res, next) => {
 
       // Redirect to the domopay dashboard
       req.flash('showBanner', 'true');
+
+      // Create a few dummy products in the Stripe account
+      const products = [
+        {
+          name: 'Bescheinigung',
+          description: 'Wohungsgeberbescheinigung, Mietschuldenfreiheitsbescheinigung, etc.',
+          default_price_data: {
+            currency: 'eur',
+            unit_amount: 2000
+          },
+        },
+/*         {
+          name: 'Schlüssel',
+          description: 'Schlüsselbestellung, Schlüsselverlust, etc.',
+          amount: 50,
+          currency: 'eur',
+          type: 'service'
+        },
+        {
+          name: 'Stundenlohn',
+          description: 'Handwerker, Reinigungskraft, etc.',
+          amount: 100,
+          currency: 'eur',
+          type: 'service'
+        } */
+      ];
+
+      for (const product of products) {
+        await stripe.products.create({
+          name: product.name,
+          description: product.description,
+          default_price_data: product.default_price_data,
+        }, {
+          stripeAccount: req.user.stripeAccountId
+        });
+      }
+
       res.redirect('/pilots/dashboard');
     } else {
       console.log('The onboarding process was not completed.');

@@ -4,8 +4,8 @@ block header
   if showBanner
     .banner
       .message
-        strong Congratulations, your account is set up. 
-        span.secondary-text Fire up your rocket and take your first passengers.
+        strong Klasse! Ihr Zugang ist nun eingerichtet. 
+        span.secondary-text Fangen Sie gleich an mit Ihren Leistungen Geld zu verdienen.
 block content
   .dashboard
     .user
@@ -62,4 +62,4 @@ block footer
         li #[strong View payouts on Stripe] lets pilots see their payouts or edit their account information.
         li #[strong Pay out now] uses the Stripe API to #[a(href="https://stripe.com/docs/connect/payouts" target="_blank") generate a payout] of the available balance.
     form.right(action='/pilots/rides', method='POST', autocomplete='off')
-      input(type='submit', name="immediate_balance", value='Create passenger ride', class='primary-action')
+      input(type='submit', name="immediate_balance", value='Auftrag erstellen', class='primary-action')
