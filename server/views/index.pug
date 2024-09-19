@@ -2,13 +2,13 @@ extends layout
 
 block header
   .intro
-    .pilots
+    .serviceVendors
       h1 Bereit für den Start?
       h2 domopay ist die innovative Plattform, mit der Immobilienverwalter unkompliziert zusätzliche Einnahmen erzielen können. Treten Sie unserem Netzwerk bei und bieten Sie wichtige Dienstleistungen an, um Mieteranforderungen einfach zu erfüllen.
-      if pilot && pilot.stripeAccountId && pilot.onboardingComplete
-        a.button.primary(href='/pilots/dashboard') Dashboard anzeigen
+      if serviceVendor && serviceVendor.stripeAccountId && serviceVendor.onboardingComplete
+        a.button.primary(href='/serviceVendors/dashboard') Dashboard anzeigen
       else
-        a.button.primary(href='/pilots/signup') Partner werden
+        a.button.primary(href='/serviceVendors/signup') Partner werden
 
 block content
   .features

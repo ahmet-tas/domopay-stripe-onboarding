@@ -3,17 +3,17 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const bcrypt = require('bcryptjs');
-const Ride = require('./ride');
+const Offering = require('./offering');
 
-// Define the Pilot schema.
-const PilotSchema = new Schema({
+// Define the ServiceVendor schema.
+const ServiceVendorSchema = new Schema({
   email: {
     type: String,
     required: true,
     unique: true,
     validate: {
       // Custom validator to check if the email was already used.
-      validator: PilotEmailValiidator,
+      validator: ServiceVendorEmailValiidator,
       message: 'This email already exists. Please try to log in instead.',
     }
   },
@@ -45,23 +45,23 @@ const PilotSchema = new Schema({
   onboardingComplete: Boolean
 });
 
-// Check the email addess to make sure it's unique (no existing pilot with that address).
-function PilotEmailValiidator(email) {
-  const Pilot = mongoose.model('Pilot');
+// Check the email addess to make sure it's unique (no existing serviceVendor with that address).
+function ServiceVendorEmailValiidator(email) {
+  const ServiceVendor = mongoose.model('ServiceVendor');
   // Asynchronously resolve a promise to validate whether an email already exists
   return new Promise((resolve, reject) => {
-    // Only check model updates for new pilots (or if the email address is updated).
+    // Only check model updates for new serviceVendors (or if the email address is updated).
     if (this.isNew || this.isModified('email')) {
-      // Try to find a matching pilot
-      Pilot.findOne({email}).exec((err, pilot) => {
+      // Try to find a matching serviceVendor
+      ServiceVendor.findOne({email}).exec((err, serviceVendor) => {
         // Handle errors
         if (err) {
           console.log(err);
           resolve(false);
           return;
         }
-        // Validate depending on whether a matching pilot exists.
-        if (pilot) {
+        // Validate depending on whether a matching serviceVendor exists.
+        if (serviceVendor) {
           resolve(false);
         } else {
           resolve(true);
@@ -73,8 +73,8 @@ function PilotEmailValiidator(email) {
   });
 }
 
-// Return a pilot name for display.
-PilotSchema.methods.displayName = function() {
+// Return a serviceVendor name for display.
+ServiceVendorSchema.methods.displayName = function() {
   if (this.type === 'company') {
     return this.businessName;
   } else {
@@ -82,42 +82,42 @@ PilotSchema.methods.displayName = function() {
   }
 };
 
-// List rides of the past week for the pilot.
-PilotSchema.methods.listRecentRides = function() {
+// List offerings of the past week for the serviceVendor.
+ServiceVendorSchema.methods.listRecentOfferings = function() {
   const weekAgo = Date.now() - (7*24*60*60*1000);
-  return Ride.find({ pilot: this, created: { $gte: weekAgo } })
-    .populate('passenger')
+  return Offering.find({ serviceVendor: this, created: { $gte: weekAgo } })
+    .populate('customer')
     .sort({ created: -1 })
     .exec();
 };
 
 // Generate a password hash (with an auto-generated salt for simplicity here).
-PilotSchema.methods.generateHash = function(password) {
+ServiceVendorSchema.methods.generateHash = function(password) {
   return bcrypt.hashSync(password, 8);
 };
 
 // Check if the password is valid by comparing with the stored hash.
-PilotSchema.methods.validatePassword = function(password) {
+ServiceVendorSchema.methods.validatePassword = function(password) {
   return bcrypt.compareSync(password, this.password);
 };
 
-// Get the first fully onboarded pilot.
-PilotSchema.statics.getFirstOnboarded = function() {
-  return Pilot.findOne({ stripeAccountId: { $ne: null } })
+// Get the first fully onboarded serviceVendor.
+ServiceVendorSchema.statics.getFirstOnboarded = function() {
+  return ServiceVendor.findOne({ stripeAccountId: { $ne: null } })
     .sort({ created: 1 })
     .exec();
 };
 
-// Get the latest fully onboarded pilot.
-PilotSchema.statics.getLatestOnboarded = function() {
-  return Pilot.findOne({ stripeAccountId: { $ne: null } })
+// Get the latest fully onboarded serviceVendor.
+ServiceVendorSchema.statics.getLatestOnboarded = function() {
+  return ServiceVendor.findOne({ stripeAccountId: { $ne: null } })
     .sort({ created: -1 })
     .exec();
 };
 
-// Pre-save hook to define some default properties for pilots.
-PilotSchema.pre('save', function(next) {
-  // Make sure certain fields are blank depending on the pilot type.
+// Pre-save hook to define some default properties for serviceVendors.
+ServiceVendorSchema.pre('save', function(next) {
+  // Make sure certain fields are blank depending on the serviceVendor type.
   if (this.isModified('type')) {
     if (this.type === 'individual') {
       this.businessName = null;
@@ -133,6 +133,6 @@ PilotSchema.pre('save', function(next) {
   next();
 });
 
-const Pilot = mongoose.model('Pilot', PilotSchema);
+const ServiceVendor = mongoose.model('ServiceVendor', ServiceVendorSchema);
 
-module.exports = Pilot;
+module.exports = ServiceVendor;

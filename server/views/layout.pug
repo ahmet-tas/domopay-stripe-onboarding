@@ -11,18 +11,18 @@ html
   body
     header
       #top
-        if pilot
+        if serviceVendor
           .logo
             a.rocketrides.mark(href='/')
           .links
-            if pilot.stripeAccountId && pilot.onboardingComplete
-              a(href='/pilots/dashboard') Dashboard
-            a(href='/pilots/logout') Abmelden
+            if serviceVendor.stripeAccountId && serviceVendor.onboardingComplete
+              a(href='/serviceVendors/dashboard') Dashboard
+            a(href='/serviceVendors/logout') Abmelden
         else
           .logo
             a.rocketrides(href='/')
           .links
-            a(href='/pilots/login') Log in
+            a(href='/serviceVendors/login') Log in
       block header
 
     #content

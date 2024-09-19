@@ -1,28 +1,28 @@
 # Rocket Rides: Stripe Connect demo
 
-Rocket Rides is a sample on-demand platform that offers passengers rides with pilots, built on top of [Stripe Connect](https://stripe.com/connect), [Connect Express](https://stripe.com/connect/express), and the [Stripe iOS SDK](https://stripe.com/docs/mobile/ios).
+Rocket Rides is a sample on-demand platform that offers customers rides with serviceVendors, built on top of [Stripe Connect](https://stripe.com/connect), [Connect Express](https://stripe.com/connect/express), and the [Stripe iOS SDK](https://stripe.com/docs/mobile/ios).
 
 **You can try the web app live on [rocketrides.io](https://rocketrides.io).**
 
 This repository contains two components:
-* [Web server in Node.js](#web-onboarding-for-pilots) to onboard pilots on the web and get them paid
-* [iOS app in Swift](#ios-app-for-passengers) for passengers to request and pay for rides
+* [Web server in Node.js](#web-onboarding-for-pilots) to onboard serviceVendors on the web and get them paid
+* [iOS app in Swift](#ios-app-for-customers) for customers to request and pay for rides
 
-## Web onboarding for pilots
+## Web onboarding for serviceVendors
 
-Rocket Rides showcases how to sign up pilots and use [Connect Express accounts](https://stripe.com/connect/account-types) to get them paid. Express provides onboarding, account management, an account dashboard, and identity verification for your platform, and we've customized Express with Rocket Rides branding.
+Rocket Rides showcases how to sign up serviceVendors and use [Connect Express accounts](https://stripe.com/connect/account-types) to get them paid. Express provides onboarding, account management, an account dashboard, and identity verification for your platform, and we've customized Express with Rocket Rides branding.
 
-This platform also uses the Stripe API to create payments for pilots, fetch their available and pending balance, and let them view transfers. It also creates [Payouts](https://stripe.com/docs/connect/payouts) for pilots who use a debit card as their payout account.
+This platform also uses the Stripe API to create payments for serviceVendors, fetch their available and pending balance, and let them view transfers. It also creates [Payouts](https://stripe.com/docs/connect/payouts) for serviceVendors who use a debit card as their payout account.
 
 <img src="server/public/images/screenshots/rocketrides-web-home.png" width="440"><img src="server/public/images/screenshots/rocketrides-web-connect.png" width="440">
 
 To integrate Stripe Connect in your own app, check out these two files in particular:
-1. [`server/routes/pilots/stripe.js`](server/routes/pilots/stripe.js) shows how to easily create Connect Express accounts and interact with the Stripe API.
-2. [`server/routes/pilots/pilots.js`](server/routes/pilots/pilots.js) shows how to create payments and transfer funds to recipient pilots.
+1. [`server/routes/serviceVendors/stripe.js`](server/routes/serviceVendors/stripe.js) shows how to easily create Connect Express accounts and interact with the Stripe API.
+2. [`server/routes/serviceVendors/serviceVendors.js`](server/routes/serviceVendors/serviceVendors.js) shows how to create payments and transfer funds to recipient serviceVendors.
 
 ### Requirements
 
-You'll need a Stripe account to manage pilot onboarding and payments:
+You'll need a Stripe account to manage serviceVendor onboarding and payments:
 - [Sign up for free](https://dashboard.stripe.com/register), then [enable Connect](https://dashboard.stripe.com/account/applications/settings) by filling in your Connect settings.
 - Fill in the necessary information in the **Branding** section in [Connect settings](https://dashboard.stripe.com/test/settings/connect).
 - Under the **Express** account type, click **Manage** to [choose from which countries](https://dashboard.stripe.com/test/settings/applications/express) users can sign up. Where possible, choose the capability to just receive **Transfers**.
@@ -50,7 +50,7 @@ Run the app:
 
 Go to http://localhost:3000 in your browser to start using the app.
 
-## iOS app for passengers
+## iOS app for customers
 
 The Rocket Rides iOS app is written in Swift and is built using the [Stripe iOS SDK](https://github.com/stripe/stripe-ios) to accept both card payments and Apple Pay.
 
@@ -71,7 +71,7 @@ Open `RocketRides.xcworkspace` (not `RocketRides.xcodeproj`) in Xcode. Build and
 
 To try out the full payment experience, run the server locally as described above, then follow these steps:
 
-1. Create a new pilot using the Rocket Rides web onboarding.
+1. Create a new serviceVendor using the Rocket Rides web onboarding.
 2. Fill in the `publishableKey` property in `AppDelegate.swift`. You can find your publishable key in your [Stripe Dashboard](https://dashboard.stripe.com/account/apikeys).
 3. Fill in the `baseURLString` property in `AppDelegate.swift`. This should be `http://localhost:3000` if you haven't modified the server configuration.
 4. `pod deintegrate & pod update` to update the dependancies.

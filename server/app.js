@@ -58,23 +58,23 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Middleware that exposes the pilot object (if any) to views
+// Middleware that exposes the serviceVendor object (if any) to views
 app.use((req, res, next) => {
   if (req.user) {
-    res.locals.pilot = req.user;
+    res.locals.serviceVendor = req.user;
   }
   next();
 });
 app.locals.moment = moment;
 
-// CRUD routes for the pilot signup and dashboard
-app.use('/pilots', require('./routes/pilots/pilots'));
-app.use('/pilots/stripe', require('./routes/pilots/stripe'));
+// CRUD routes for the serviceVendor signup and dashboard
+app.use('/serviceVendors', require('./routes/serviceVendors/serviceVendors'));
+app.use('/serviceVendors/stripe', require('./routes/serviceVendors/stripe'));
 
-// API routes for rides and passengers used by the mobile app
+// API routes for offerings and customers used by the mobile app
 app.use('/api/settings', require('./routes/api/settings'));
-app.use('/api/rides', require('./routes/api/rides'));
-app.use('/api/passengers', require('./routes/api/passengers'));
+app.use('/api/offerings', require('./routes/api/offerings'));
+app.use('/api/customers', require('./routes/api/customers'));
 
 // Index page for domopay
 app.get('/', (req, res) => {

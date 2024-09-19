@@ -10,8 +10,8 @@ const Schema = mongoose.Schema;
 // Use native promises.
 mongoose.Promise = global.Promise;
 
-// Define the Passenger schema.
-const PassengerSchema = new Schema({
+// Define the Customer schema.
+const CustomerSchema = new Schema({
   email: { type: String, required: true, unique: true },
   firstName: String,
   lastName: String,
@@ -21,22 +21,22 @@ const PassengerSchema = new Schema({
   stripeCustomerId: String
 });
 
-// Return a passenger name for display.
-PassengerSchema.methods.displayName = function() {
+// Return a customer name for display.
+CustomerSchema.methods.displayName = function() {
   return `${this.firstName} ${this.lastName.charAt(0)}.`;
 };
 
-// Get the latest passenger.
-PassengerSchema.statics.getLatest = async function() {
+// Get the latest customer.
+CustomerSchema.statics.getLatest = async function() {
   try {
-    // Count all the passengers.
-    const count = await Passenger.countDocuments().exec();
+    // Count all the customers.
+    const count = await Customer.countDocuments().exec();
     if (count === 0) {
-      // Create default passengers.
-      await Passenger.insertDefaultPassengers();
+      // Create default customers.
+      await Customer.insertDefaultCustomers();
     }
-    // Return latest passenger.
-    return Passenger.findOne()
+    // Return latest customer.
+    return Customer.findOne()
       .sort({ created: -1 })
       .exec();
   } catch (err) {
@@ -44,25 +44,25 @@ PassengerSchema.statics.getLatest = async function() {
   }
 };
 
-// Find a random passenger.
-PassengerSchema.statics.getRandom = async function() {
+// Find a random customer.
+CustomerSchema.statics.getRandom = async function() {
   try {
-    // Count all the passengers.
-    const count = await Passenger.countDocuments().exec();
+    // Count all the customers.
+    const count = await Customer.countDocuments().exec();
     if (count === 0) {
-      // Create default passengers.
-      await Passenger.insertDefaultPassengers();
+      // Create default customers.
+      await Customer.insertDefaultCustomers();
     }
     // Returns a document after skipping a random amount.
     const random = Math.floor(Math.random() * count);
-    return Passenger.findOne().skip(random).exec();
+    return Customer.findOne().skip(random).exec();
   } catch (err) {
     console.log(err);
   }
 };
 
-// Create a few default passengers for the platform to simulate rides.
-PassengerSchema.statics.insertDefaultPassengers = async function() {
+// Create a few default customers for the platform to simulate offerings.
+CustomerSchema.statics.insertDefaultCustomers = async function() {
   try {
     const data = [{
       firstName: 'Jenny',
@@ -86,20 +86,20 @@ PassengerSchema.statics.insertDefaultPassengers = async function() {
       email: 'emma.lane@example.com'
     }];
     for (let object of data) {
-      const passenger = new Passenger(object);
-      // Create a Stripe account for each of the passengers.
-      const customer = await stripe.customers.create({
-        email: passenger.email,
-        description: passenger.displayName()
+      const customer = new Customer(object);
+      // Create a Stripe account for each of the customers.
+      const stripeCustomer = await stripe.customers.create({
+        email: customer.email,
+        description: customer.displayName()
       });
-      passenger.stripeCustomerId = customer.id;
-      await passenger.save();
+      customer.stripeCustomerId = stripeCustomer.id;
+      await customer.save();
     }
   } catch (err) {
     console.log(err);
   }
 };
 
-const Passenger = mongoose.model('Passenger', PassengerSchema);
+const Customer = mongoose.model('Customer', CustomerSchema);
 
-module.exports = Passenger;
+module.exports = Customer;

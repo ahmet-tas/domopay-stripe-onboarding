@@ -22,22 +22,22 @@ block content
 
       when 'profile'
         form(method='POST', autocomplete='off')
-          h4.pilot-header Account Typ
-          .pilot-options
-            label.pilot-option
-              input(type='radio', name='pilot-type', value='company', id='po-company', checked=true)
+          h4.serviceVendor-header Account Typ
+          .serviceVendor-options
+            label.serviceVendor-option
+              input(type='radio', name='serviceVendor-type', value='company', id='po-company', checked=true)
               span Firma
-            label.pilot-option
-              input(type='radio', name='pilot-type', value='individual', id='po-individual')
+            label.serviceVendor-option
+              input(type='radio', name='serviceVendor-type', value='individual', id='po-individual')
               span Einzelperson
 
-          h4.pilot-header#account-info Persönliche Daten
+          h4.serviceVendor-header#account-info Persönliche Daten
           fieldset
-            .row.pilot-info.individual(label='* Vorname')
+            .row.serviceVendor-info.individual(label='* Vorname')
               input(type='text', name='firstName', placeholder='Sepp')
-            .row.pilot-info.individual(label='* Nachname')
+            .row.serviceVendor-info.individual(label='* Nachname')
               input(type='text', name='lastName', placeholder='Maier')
-            .row.pilot-info.company.hidden(label='* Firmenname')
+            .row.serviceVendor-info.company.hidden(label='* Firmenname')
               input(type='text', name='businessName', placeholder='Hausverwaltung Maier GmbH')
             .row.select(label='Land')
               select(name='country')
@@ -67,4 +67,4 @@ block content
       when 'payments'
         h1.title Verbinden Sie Ihr Konto mit Stripe
         p Wir verwenden Stripe, um sicherzustellen, dass Sie pünktlich bezahlt werden und Ihre persönlichen und Bankdaten sicher sind.
-        a.button.primary(href='/pilots/stripe/authorize') Auszahlungen einrichten
+        a.button.primary(href='/serviceVendors/stripe/authorize') Auszahlungen einrichten

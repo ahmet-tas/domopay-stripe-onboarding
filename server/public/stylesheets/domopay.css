@@ -607,7 +607,7 @@ form a.button {
   padding: 60px 0 80px;
 }
 
-.intro .pilots {
+.intro .serviceVendors {
   flex-direction: column;
 }
 
@@ -749,12 +749,12 @@ form a.button {
   text-align: center;
 }
 
-/* Pilot onboarding options */
-.pilot-options {
+/* ServiceVendor onboarding options */
+.serviceVendor {
   margin: 0 0 35px;
 }
 
-.form label.pilot-option {
+.form label.serviceVendor-option {
   width: auto;
   padding: 0;
   cursor: pointer;
@@ -762,7 +762,7 @@ form a.button {
   margin: 17px 0;
 }
 
-.pilot-option input {
+.serviceVendor-option input {
   display: none;
   height: 0;
   width: 0;
@@ -772,7 +772,7 @@ form a.button {
   -webkit-appearance: none;
 }
 
-.pilot-option input + span {
+.serviceVendor-option input + span {
   display: flex;
   position: relative;
   align-items: center;
@@ -782,7 +782,7 @@ form a.button {
   padding-left: 10px;
 }
 
-.pilot-option input + span:before {
+.serviceVendor-option input + span:before {
   content: '';
   display: inline-block;
   position: relative;
@@ -794,7 +794,7 @@ form a.button {
   box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.15);
 }
 
-.pilot-option input:checked + span:after {
+.serviceVendor-option input:checked + span:after {
   content: '';
   display: flex;
   position: absolute;
@@ -806,24 +806,24 @@ form a.button {
   border-radius: 10px;
 }
 
-.row.pilot-info.hidden {
+.row.serviceVendor-info.hidden {
   display: none;
 }
 
-/* Ride history */
-.rides {
+/* Offering history */
+.offerings {
   width: 100%;
   margin: 0 auto;
   align-items: flex-start;
 }
 
-.rides h4 {
+.offerings h4 {
   margin-bottom: 14px;
   color: #292f45;
   font-weight: 500;
 }
 
-.rides .no-rides {
+.offerings .no-offerings {
   width: 100%;
   min-height: 250px;
   background: #edf3f7;
@@ -833,12 +833,12 @@ form a.button {
   align-items: center;
 }
 
-.rides .no-rides .rocket {
+.offerings .no-offerings .rocket {
   width: 52px;
   height: 52px;
   background-image: url(/images/rocket.svg);
 }
-.rides .no-rides h1 {
+.offerings .no-offerings h1 {
   color: #525f7f;
   font-size: 24px;
   font-weight: 400;
@@ -847,32 +847,32 @@ form a.button {
   margin-bottom: 10px;
 }
 
-.rides .no-rides h2 {
+.offerings .no-offerings h2 {
   color: #8898aa;
   font-size: 13px;
   font-weight: 500;
   text-align: center;
 }
 
-.rides .list {
+.offerings .list {
   width: 100%;
   background-color: #fff;
   box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.15);
   border-radius: 5px;
 }
 
-.rides .list .row {
+.offerings .list .row {
   display: flex;
   align-items: center;
   position: relative;
   width: 100%;
 }
 
-.rides .list .row + .row {
+.offerings .list .row + .row {
   border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.rides .list .cell {
+.offerings .list .cell {
   flex: 1;
   position: relative;
   padding: 15px 20px;
@@ -880,14 +880,14 @@ form a.button {
   font-size: 15px;
 }
 
-.rides .list .cell.name {
+.offerings .list .cell.name {
   flex: 2;
   padding-left: 60px;
   color: #313b3f;
   font-weight: 500;
 }
 
-.rides .list .cell.name::before {
+.offerings .list .cell.name::before {
   content: '';
   position: absolute;
   width: 24px;
@@ -901,11 +901,11 @@ form a.button {
     0 1px 3px -1px rgba(0, 0, 0, 0.3);
 }
 
-.rides .list .cell.date {
+.offerings .list .cell.date {
   flex: 1.5;
 }
 
-.rides .list .cell.price {
+.offerings .list .cell.price {
   flex: 1;
   font-weight: 500;
   text-align: right;
@@ -1127,7 +1127,7 @@ form a.button {
     padding-bottom: 120px;
   }
 
-  .rides {
+  .offerings {
     margin: 0 0 15px;
   }
 
@@ -1178,21 +1178,21 @@ form a.button {
     margin: 0;
   }
 
-  .rides .list .cell.name {
+  .offerings .list .cell.name {
     flex: 1;
     padding-right: 5px;
     padding-left: 15px;
   }
 
-  .rides .list .cell.name::before {
+  .offerings .list .cell.name::before {
     display: none;
   }
 
-  .rides .list .cell.date {
+  .offerings .list .cell.date {
     padding: 10px 5px;
   }
 
-  .rides .list .cell.price {
+  .offerings .list .cell.price {
     flex: 0.6;
     padding-left: 5px;
   }

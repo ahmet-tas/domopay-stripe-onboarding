@@ -1,18 +1,18 @@
 // Toggle between each type of legal entity (business or individual) in the signup form
 document.body.addEventListener('change', function(e) {
-  if (e.target.name !== 'pilot-type') {
+  if (e.target.name !== 'serviceVendor-type') {
     return;
   }
 
   // Show the correct header for the select legal entity
   var headerPrefix = e.target.value === 'individual' ? 'Persönliche' : 'Firmen';
   document.querySelector(
-    '.pilot-header#account-info'
+    '.serviceVendor-header#account-info'
   ).innerText = `${headerPrefix} Daten`;
 
-  // Show any fields that apply to the new pilot type
-  var pilotInfoRows = document.querySelectorAll('.pilot-info');
-  pilotInfoRows.forEach(function(row) {
+  // Show any fields that apply to the new serviceVendor type
+  var serviceVendorInfoRows = document.querySelectorAll('.serviceVendor-info');
+  serviceVendorInfoRows.forEach(function(row) {
     row.classList.toggle('hidden', !row.classList.contains(e.target.value));
   });
 });

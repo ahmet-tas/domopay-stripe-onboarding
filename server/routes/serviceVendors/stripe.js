@@ -9,20 +9,20 @@ const querystring = require('querystring');
 const express = require('express');
 const router = express.Router();
 
-// Middleware that requires a logged-in pilot
-function pilotRequired(req, res, next) {
+// Middleware that requires a logged-in serviceVendor
+function serviceVendorRequired(req, res, next) {
   if (!req.isAuthenticated()) {
-    return res.redirect('/pilots/login');
+    return res.redirect('/serviceVendors/login');
   } 
   next();
 }
 
 /**
- * GET /pilots/stripe/authorize
+ * GET /serviceVendors/stripe/authorize
  *
  * Redirect to Stripe to set up payments.
  */
-router.get('/authorize', pilotRequired, async (req, res, next) => {
+router.get('/authorize', serviceVendorRequired, async (req, res, next) => {
   // Generate a random string as `state` to protect from CSRF and include it in the session
   req.session.state = Math.random()
     .toString(36)
@@ -62,7 +62,7 @@ router.get('/authorize', pilotRequired, async (req, res, next) => {
       accountId = account.id;
 
       // Update the model and store the Stripe account ID in the datastore:
-      // this Stripe account ID will be used to issue payouts to the pilot
+      // this Stripe account ID will be used to issue payouts to the serviceVendor
       req.user.stripeAccountId = accountId;
       await req.user.save();
     }
@@ -70,8 +70,8 @@ router.get('/authorize', pilotRequired, async (req, res, next) => {
     // Create an account link for the user's Stripe account
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: config.publicDomain + '/pilots/stripe/authorize',
-      return_url: config.publicDomain + '/pilots/stripe/onboarded',
+      refresh_url: config.publicDomain + '/serviceVendors/stripe/authorize',
+      return_url: config.publicDomain + '/serviceVendors/stripe/onboarded',
       type: 'account_onboarding'
     });
 
@@ -85,11 +85,11 @@ router.get('/authorize', pilotRequired, async (req, res, next) => {
 });
 
 /**
- * GET /pilots/stripe/onboarded
+ * GET /serviceVendors/stripe/onboarded
  *
  * Return endpoint from Stripe onboarding, checks if onboarding has been completed and creates dummy products in newly created Stripe account.
  */
-router.get('/onboarded', pilotRequired, async (req, res, next) => {
+router.get('/onboarded', serviceVendorRequired, async (req, res, next) => {
   try {
     // Retrieve the user's Stripe account and check if they have finished onboarding
     const account = await stripe.account.retrieve(req.user.stripeAccountId);
@@ -136,10 +136,10 @@ router.get('/onboarded', pilotRequired, async (req, res, next) => {
         });
       }
 
-      res.redirect('/pilots/dashboard');
+      res.redirect('/serviceVendors/dashboard');
     } else {
       console.log('The onboarding process was not completed.');
-      res.redirect('/pilots/signup');
+      res.redirect('/serviceVendors/signup');
     }
   } catch (err) {
     console.log('Failed to retrieve Stripe account information.');
@@ -149,21 +149,21 @@ router.get('/onboarded', pilotRequired, async (req, res, next) => {
 })
 
 /**
- * GET /pilots/stripe/dashboard
+ * GET /serviceVendors/stripe/dashboard
  *
- * Redirect to the pilots' Stripe Express dashboard to view payouts and edit account details.
+ * Redirect to the serviceVendors' Stripe Express dashboard to view payouts and edit account details.
  */
-router.get('/dashboard', pilotRequired, async (req, res) => {
-  const pilot = req.user;
-  // Make sure the logged-in pilot completed the Express onboarding
-  if (!pilot.onboardingComplete) {
-    return res.redirect('/pilots/signup');
+router.get('/dashboard', serviceVendorRequired, async (req, res) => {
+  const serviceVendor = req.user;
+  // Make sure the logged-in serviceVendor completed the Express onboarding
+  if (!serviceVendor.onboardingComplete) {
+    return res.redirect('/serviceVendors/signup');
   }
   try {
     // Generate a unique login link for the associated Stripe account to access their Express dashboard
     const loginLink = await stripe.accounts.createLoginLink(
-      pilot.stripeAccountId, {
-        redirect_url: config.publicDomain + '/pilots/dashboard'
+      serviceVendor.stripeAccountId, {
+        redirect_url: config.publicDomain + '/serviceVendors/dashboard'
       }
     );
     // Directly link to the account tab
@@ -175,21 +175,21 @@ router.get('/dashboard', pilotRequired, async (req, res) => {
   } catch (err) {
     console.log(err);
     console.log('Failed to create a Stripe login link.');
-    return res.redirect('/pilots/signup');
+    return res.redirect('/serviceVendors/signup');
   }
 });
 
 /**
- * POST /pilots/stripe/payout
+ * POST /serviceVendors/stripe/payout
  *
  * Generate a payout with Stripe for the available balance.
  */
-router.post('/payout', pilotRequired, async (req, res) => {
-  const pilot = req.user;
+router.post('/payout', serviceVendorRequired, async (req, res) => {
+  const serviceVendor = req.user;
   try {
     // Fetch the account balance to determine the available funds
     const balance = await stripe.balance.retrieve({
-      stripe_account: pilot.stripeAccountId,
+      stripe_account: serviceVendor.stripeAccountId,
     });
     // This demo app only uses USD so we'll just use the first available balance
     // (Note: there is one balance for each currency used in your application)
@@ -199,11 +199,11 @@ router.post('/payout', pilotRequired, async (req, res) => {
       amount: amount,
       currency: currency,
       statement_descriptor: config.appName,
-    }, {stripe_account: pilot.stripeAccountId });
+    }, {stripe_account: serviceVendor.stripeAccountId });
   } catch (err) {
     console.log(err);
   }
-  res.redirect('/pilots/dashboard');
+  res.redirect('/serviceVendors/dashboard');
 });
 
 module.exports = router;

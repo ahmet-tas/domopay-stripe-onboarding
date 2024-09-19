@@ -6,11 +6,11 @@ const stripe = require('stripe')(config.stripe.secretKey, {
 });
 const express = require('express');
 const router = express.Router();
-const Passenger = require('../../models/passenger');
+const Customer = require('../../models/customer');
 
 /* For this demo, we assume that we're always authenticating the
- * latest passenger. In a production app, you would also typically
- * have a user authentication system for passengers.
+ * latest customer. In a production app, you would also typically
+ * have a user authentication system for customers.
  */
 
 module.exports = router;

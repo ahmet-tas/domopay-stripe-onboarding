@@ -8,14 +8,14 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-const Pilot = require('../../models/pilot');
-const Ride = require('../../models/ride');
-const Passenger = require('../../models/passenger');
+const ServiceVendor = require('../../models/serviceVendor');
+const Offering = require('../../models/offering');
+const Customer = require('../../models/customer');
 
-// Middleware: require a logged-in pilot
-function pilotRequired(req, res, next) {
+// Middleware: require a logged-in serviceVendor
+function serviceVendorRequired(req, res, next) {
   if (!req.isAuthenticated()) {
-    return res.redirect('/pilots/login');
+    return res.redirect('/serviceVendors/login');
   }
   next();
 }
@@ -30,57 +30,58 @@ const getCurrencySymbol = currency => {
 }
 
 /**
- * GET /pilots/dashboard
+ * GET /serviceVendors/dashboard
  *
- * Show the Dashboard for the logged-in pilot with the overview,
- * their ride history, and the ability to simulate a test ride.
+ * Show the Dashboard for the logged-in serviceVendor with the overview,
+ * their offering history, and the ability to simulate a test offering.
  *
- * Use the `pilotRequired` middleware to ensure that only logged-in
- * pilots can access this route.
+ * Use the `serviceVendorRequired` middleware to ensure that only logged-in
+ * serviceVendors can access this route.
  */
-router.get('/dashboard', pilotRequired, async (req, res) => {
-  const pilot = req.user;
+router.get('/dashboard', serviceVendorRequired, async (req, res) => {
+  const serviceVendor = req.user;
   // Retrieve the balance from Stripe
   const balance = await stripe.balance.retrieve({
-    stripe_account: pilot.stripeAccountId,
+    stripe_account: serviceVendor.stripeAccountId,
   });
-  // Fetch the pilot's recent rides
-  const rides = await pilot.listRecentRides();
-  const ridesTotalAmount = rides.reduce((a, b) => {
-    return a + b.amountForPilot();
+  // Fetch the serviceVendor's recent offerings
+  const offerings = await serviceVendor.listRecentOfferings() || [];
+  const offeringsTotalAmount = offerings.reduce((a, b) => {
+    return a + b.amountForServiceVendor();
   }, 0);
   const [showBanner] = req.flash('showBanner');
   // There is one balance for each currencies used: as this 
   // demo app only uses USD we'll just use the first object
   res.render('dashboard', {
-    pilot: pilot,
+    serviceVendor: serviceVendor,
     balanceAvailable: balance.available[0].amount,
     balancePending: balance.pending[0].amount,
-    ridesTotalAmount: ridesTotalAmount,
+    offeringsTotalAmount: offeringsTotalAmount,
     balanceCurrency: getCurrencySymbol(balance.available[0].currency),
-    rides: rides,
+    offerings: offerings,
+    rides: offerings,
     showBanner: !!showBanner || req.query.showBanner,
   });
 });
 
 /**
- * POST /pilots/rides
+ * POST /serviceVendors/offerings
  *
- * Generate a test ride with sample data for the logged-in pilot.
+ * Generate a test offering with sample data for the logged-in serviceVendor.
  */
-router.post('/rides', pilotRequired, async (req, res, next) => {
-  const pilot = req.user;
-  // Find a random passenger
-  const passenger = await Passenger.getRandom();
-  // Create a new ride for the pilot and this random passenger
-  const ride = new Ride({
-    pilot: pilot.id,
-    passenger: passenger.id,
-    // Generate a random amount between €10 and €100 for this ride
+router.post('/offerings', serviceVendorRequired, async (req, res, next) => {
+  const serviceVendor = req.user;
+  // Find a random customer
+  const customer = await Customer.getRandom();
+  // Create a new offering for the serviceVendor and this random customer
+  const offering = new Offering({
+    serviceVendor: serviceVendor.id,
+    customer: customer.id,
+    // Generate a random amount between €10 and €100 for this offering
     amount: getRandomInt(1000, 10000),
   });
-  // Save the ride
-  await ride.save();
+  // Save the offering
+  await offering.save();
   try {
     // Get a test source, using the given testing behavior
     let source;
@@ -91,22 +92,22 @@ router.post('/rides', pilotRequired, async (req, res, next) => {
     }
     let charge;
     // Accounts created in Japan/Germany have the `full` service agreement and must create their own card payments
-    if (pilot.country === 'DE') {
-      // Create a Destination Charge to the pilot's account
+    if (serviceVendor.country === 'DE') {
+      // Create a Destination Charge to the serviceVendor's account
       charge = await stripe.charges.create({
         source: source,
-        amount: ride.amount,
-        currency: ride.currency,
+        amount: offering.amount,
+        currency: offering.currency,
         description: config.appName,
         statement_descriptor: config.appName,
-        on_behalf_of: pilot.stripeAccountId,
-        // The destination parameter directs the transfer of funds from platform to pilot
+        on_behalf_of: serviceVendor.stripeAccountId,
+        // The destination parameter directs the transfer of funds from platform to serviceVendor
         transfer_data: {
-          // Send the amount for the pilot after collecting a 20% platform fee:
-          // the `amountForPilot` method simply computes `ride.amount * 0.8`
-          amount: ride.amountForPilot(),
-          // The destination of this charge is the pilot's Stripe account
-          destination: pilot.stripeAccountId,
+          // Send the amount for the serviceVendor after collecting a 20% platform fee:
+          // the `amountForServiceVendor` method simply computes `offering.amount * 0.8`
+          amount: offering.amountForServiceVendor(),
+          // The destination of this charge is the serviceVendor's Stripe account
+          destination: serviceVendor.stripeAccountId,
         },
       });
     } else {
@@ -114,34 +115,34 @@ router.post('/rides', pilotRequired, async (req, res, next) => {
       // onboarding flow): the platform creates the charge and then separately transfers the funds to the recipient.
       charge = await stripe.charges.create({
         source: source,
-        amount: ride.amount,
-        currency: ride.currency,
+        amount: offering.amount,
+        currency: offering.currency,
         description: config.appName,
         statement_descriptor: config.appName,
-        // The `transfer_group` parameter must be a unique id for the ride; it must also match between the charge and transfer
-        transfer_group: ride.id
+        // The `transfer_group` parameter must be a unique id for the offering; it must also match between the charge and transfer
+        transfer_group: offering.id
       });
       const transfer = await stripe.transfers.create({
-        amount: ride.amountForPilot(),
-        currency: ride.currency,
-        destination: pilot.stripeAccountId,
-        transfer_group: ride.id
+        amount: offering.amountForServiceVendor(),
+        currency: offering.currency,
+        destination: serviceVendor.stripeAccountId,
+        transfer_group: offering.id
       })
     }
-    // Add the Stripe charge reference to the ride and save it
-    ride.stripeChargeId = charge.id;
-    ride.save();
+    // Add the Stripe charge reference to the offering and save it
+    offering.stripeChargeId = charge.id;
+    offering.save();
   } catch (err) {
     console.log(err);
     // Return a 402 Payment Required error code
     res.sendStatus(402);
     next(`Error adding token to customer: ${err.message}`);
   }
-  res.redirect('/pilots/dashboard');
+  res.redirect('/serviceVendors/dashboard');
 });
 
 /**
- * GET /pilots/signup
+ * GET /serviceVendors/signup
  *
  * Display the signup form on the right step depending on the current completion.
  */
@@ -165,28 +166,28 @@ router.get('/signup', (req, res) => {
 });
 
 /**
- * POST /pilots/signup
+ * POST /serviceVendors/signup
  *
- * Create a user and update profile information during the pilot onboarding process.
+ * Create a user and update profile information during the serviceVendor onboarding process.
  */
 router.post('/signup', async (req, res, next) => {
   const body = Object.assign({}, req.body, {
-    // Use `type` instead of `pilot-type` for saving to the DB.
-    type: req.body['pilot-type'],
-    'pilot-type': undefined,
+    // Use `type` instead of `serviceVendor-type` for saving to the DB.
+    type: req.body['serviceVendor-type'],
+    'serviceVendor-type': undefined,
   });
 
-  // Check if we have a logged-in pilot
-  let pilot = req.user;
-  if (!pilot) {
+  // Check if we have a logged-in serviceVendor
+  let serviceVendor = req.user;
+  if (!serviceVendor) {
     try {
-      // Try to create and save a new pilot
-      pilot = new Pilot(body);
-      pilot = await pilot.save()
+      // Try to create and save a new serviceVendor
+      serviceVendor = new ServiceVendor(body);
+      serviceVendor = await serviceVendor.save()
       // Sign in and redirect to continue the signup process
-      req.logIn(pilot, err => {
+      req.logIn(serviceVendor, err => {
         if (err) next(err);
-        return res.redirect('/pilots/signup');
+        return res.redirect('/serviceVendors/signup');
       });
     } catch (err) {
       console.log(err); 
@@ -197,10 +198,10 @@ router.post('/signup', async (req, res, next) => {
   } 
   else {
     try {
-      // Try to update the logged-in pilot using the newly entered profile data
-      pilot.set(body);
-      await pilot.save();
-      return res.redirect('/pilots/stripe/authorize');
+      // Try to update the logged-in serviceVendor using the newly entered profile data
+      serviceVendor.set(body);
+      await serviceVendor.save();
+      return res.redirect('/serviceVendors/stripe/authorize');
     } catch (err) {
       next(err);
     }
@@ -208,58 +209,58 @@ router.post('/signup', async (req, res, next) => {
 });
 
 /**
- * GET /pilots/login
+ * GET /serviceVendors/login
  *
- * Simple pilot login.
+ * Simple serviceVendor login.
  */
 router.get('/login', (req, res) => {
   res.render('login');
 });
 
 /**
- * GET /pilots/login
+ * GET /serviceVendors/login
  *
- * Simple pilot login.
+ * Simple serviceVendor login.
  */
 router.post(
   '/login',
-  passport.authenticate('pilot-login', {
-    successRedirect: '/pilots/dashboard',
-    failureRedirect: '/pilots/login',
+  passport.authenticate('serviceVendor-login', {
+    successRedirect: '/serviceVendors/dashboard',
+    failureRedirect: '/serviceVendors/login',
   })
 );
 
 /**
- * GET /pilots/logout
+ * GET /serviceVendors/logout
  *
- * Delete the pilot from the session.
+ * Delete the serviceVendor from the session.
  */
 router.get('/logout', (req, res) => {
   req.logout();
   res.redirect('/');
 });
 
-// Serialize the pilot's sessions for Passport
+// Serialize the serviceVendor's sessions for Passport
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 passport.deserializeUser(async (id, done) => {
   try {
-    let user = await Pilot.findById(id);
+    let user = await ServiceVendor.findById(id);
     done(null, user);
   } catch (err) {
     done(err);
   }
 });
 
-// Define the login strategy for pilots based on email and password
-passport.use('pilot-login', new LocalStrategy({
+// Define the login strategy for serviceVendors based on email and password
+passport.use('serviceVendor-login', new LocalStrategy({
   usernameField: 'email',
   passwordField: 'password'
 }, async (email, password, done) => {
   let user;
   try {
-    user = await Pilot.findOne({email});
+    user = await ServiceVendor.findOne({email});
     if (!user) {
       return done(null, false, { message: 'Unbekannter Benutzer' });
     }
