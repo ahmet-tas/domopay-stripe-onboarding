@@ -4,6 +4,9 @@ const config = require('./config');
 const express = require('express');
 const session = require('cookie-session');
 const passport = require('passport');
+const ApiKeyStrategy = require('passport-headerapikey').HeaderAPIKeyStrategy;
+const AuthService = require('./services/AuthService'); // Use the service for serviceVendor lookup
+
 const path = require('path');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
@@ -53,6 +56,24 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Use API Key strategy with Passport
+passport.use(new ApiKeyStrategy(
+  { header: 'Authorization', prefix: 'Api-Key ' },
+  true,
+  async (apiKey, done) => {
+    try {
+      // Delegate the responsibility of finding the user to AuthService
+      const serviceVendor = await AuthService.findByApiKey(apiKey);
+      if (!serviceVendor) {
+        return done(null, false);
+      }
+      return done(null, serviceVendor);
+    } catch (err) {
+      return done(err);
+    }
+  }
+));
 
 // Initialize Passport and restore any existing authentication state
 app.use(passport.initialize());

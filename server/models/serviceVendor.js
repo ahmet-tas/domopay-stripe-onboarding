@@ -42,7 +42,8 @@ const ServiceVendorSchema = new Schema({
   businessName: String,
   // Stripe account ID to send payments obtained with Stripe Connect.
   stripeAccountId: String,
-  onboardingComplete: Boolean
+  onboardingComplete: Boolean,
+  apiKey: { type: String, unique: true }
 });
 
 // Check the email addess to make sure it's unique (no existing serviceVendor with that address).

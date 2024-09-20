@@ -2,12 +2,13 @@
 
 const config = require('../../config');
 const stripe = require('stripe')(config.stripe.secretKey, {
-  apiVersion: config.stripe.apiVersion || '2022-08-01'
+  apiVersion: '2024-06-20'
 });
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+const crypto = require('crypto');
 const ServiceVendor = require('../../models/serviceVendor');
 const Offering = require('../../models/offering');
 const Customer = require('../../models/customer');
@@ -18,6 +19,11 @@ function serviceVendorRequired(req, res, next) {
     return res.redirect('/serviceVendors/login');
   }
   next();
+}
+
+// Middleware: authenticate using API key
+function authenticate(req, res, next) {
+  passport.authenticate('headerapikey', { session: false })(req, res, next);
 }
 
 // Helper function: get the currency symbol for the given country ISO code
@@ -42,14 +48,16 @@ router.get('/dashboard', serviceVendorRequired, async (req, res) => {
   const serviceVendor = req.user;
   // Retrieve the balance from Stripe
   const balance = await stripe.balance.retrieve({
-    stripe_account: serviceVendor.stripeAccountId,
+    stripeAccount: serviceVendor.stripeAccountId,
   });
+
   // Fetch the serviceVendor's recent offerings
   const offerings = await serviceVendor.listRecentOfferings() || [];
   const offeringsTotalAmount = offerings.reduce((a, b) => {
     return a + b.amountForServiceVendor();
   }, 0);
   const [showBanner] = req.flash('showBanner');
+  
   // There is one balance for each currencies used: as this 
   // demo app only uses USD we'll just use the first object
   res.render('dashboard', {
@@ -181,10 +189,17 @@ router.post('/signup', async (req, res, next) => {
   let serviceVendor = req.user;
   if (!serviceVendor) {
     try {
-      // Try to create and save a new serviceVendor
-      serviceVendor = new ServiceVendor(body);
-      serviceVendor = await serviceVendor.save()
-      // Sign in and redirect to continue the signup process
+      // Try to create and save a new serviceVendor, including API key generation
+      serviceVendor = new ServiceVendor({
+        email: body.email,
+        password: body.password, 
+        apiKey: crypto.randomBytes(20).toString('hex'), // Generate and assign API key
+        type: body.type,
+        stripeAccountId: body.stripeAccountId,
+      });
+      serviceVendor = await serviceVendor.save();
+
+      // Log in the new serviceVendor and redirect to the signup process continuation
       req.logIn(serviceVendor, err => {
         if (err) next(err);
         return res.redirect('/serviceVendors/signup');
@@ -198,7 +213,7 @@ router.post('/signup', async (req, res, next) => {
   } 
   else {
     try {
-      // Try to update the logged-in serviceVendor using the newly entered profile data
+      // If the serviceVendor is already logged in, update their profile data
       serviceVendor.set(body);
       await serviceVendor.save();
       return res.redirect('/serviceVendors/stripe/authorize');
@@ -238,6 +253,56 @@ router.post(
 router.get('/logout', (req, res) => {
   req.logout();
   res.redirect('/');
+});
+
+/**
+ * GET /serviceVendors/offerings
+ *
+ * Gets all Stripe products for connected account
+ */
+router.get('/offerings', authenticate, async (req, res) => {
+  try {
+    const serviceVendor = req.user;  // The authenticated user (connected account)
+    const stripeAccountId = serviceVendor.stripeAccountId; // The Stripe account ID of the connected account
+
+    // Get all products for the connected account
+    const products = await stripe.products.list({}, { stripeAccount: stripeAccountId });
+
+    res.json({ products });
+  } catch (error) {
+    console.error('Error creating Payment Link:', error);
+    res.status(500).json({ error: 'Failed to create payment link' });
+  }
+});
+
+/**
+ * POST /serviceVendors/paymentLink
+ *
+ * Create new payment link for the request Stripe priceId
+ */
+router.post('/paymentLink', authenticate, async (req, res) => {
+  const { priceId, quantity } = req.body;
+
+  try {
+    const serviceVendor = req.user;  // The authenticated user (connected account)
+    const stripeAccountId = serviceVendor.stripeAccountId; // The Stripe account ID of the connected account
+
+    const paymentLink = await stripe.paymentLinks.create({
+      line_items: [{
+          price: priceId,
+          quantity: quantity,
+        }]
+      }, { stripeAccount: stripeAccountId });
+
+    // Return the Payment Link URL (this is the long-lived link you want)
+    res.json({
+      success: true,
+      paymentLink: paymentLink.url,
+    });
+  } catch (error) {
+    console.error('Error creating Payment Link:', error);
+    res.status(500).json({ error: 'Failed to create payment link' });
+  }
 });
 
 // Serialize the serviceVendor's sessions for Passport

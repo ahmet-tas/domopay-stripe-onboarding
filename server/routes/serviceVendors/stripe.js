@@ -189,7 +189,7 @@ router.post('/payout', serviceVendorRequired, async (req, res) => {
   try {
     // Fetch the account balance to determine the available funds
     const balance = await stripe.balance.retrieve({
-      stripe_account: serviceVendor.stripeAccountId,
+      stripeAccount: serviceVendor.stripeAccountId,
     });
     // This demo app only uses USD so we'll just use the first available balance
     // (Note: there is one balance for each currency used in your application)
@@ -199,7 +199,7 @@ router.post('/payout', serviceVendorRequired, async (req, res) => {
       amount: amount,
       currency: currency,
       statement_descriptor: config.appName,
-    }, {stripe_account: serviceVendor.stripeAccountId });
+    }, { stripeAccount: serviceVendor.stripeAccountId });
   } catch (err) {
     console.log(err);
   }
