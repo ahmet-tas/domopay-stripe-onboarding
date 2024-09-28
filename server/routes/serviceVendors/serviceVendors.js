@@ -305,6 +305,52 @@ router.post('/paymentLink', authenticate, async (req, res) => {
   }
 });
 
+// Create a payment link based on an existing product ID
+router.post('/paymentLink/product', authenticate, async (req, res) => {
+  const { productId, unitPrice, quantity, requireAddress = false } = req.body;
+
+  // Input validation
+  if (!productId || !unitPrice || isNaN(unitPrice) || unitPrice <= 0) {
+      return res.status(400).json({ error: 'Invalid product ID or price' });
+  }
+
+  //validate quantity
+  if (quantity && (isNaN(quantity) || quantity <= 0)) {
+      return res.status(400).json({ error: 'Invalid quantity' });
+  }
+
+  try {
+    const serviceVendor = req.user;  // The authenticated user (connected account)
+    const stripeAccountId = serviceVendor.stripeAccountId; // The Stripe account ID of the connected account
+
+      // Create a price object for the existing product
+      const priceObj = await stripe.prices.create({
+          unit_amount: unitPrice * 100, // Convert to cents
+          currency: 'eur',
+          product: productId,
+      }, { stripeAccount: stripeAccountId });
+
+      // Create payment link
+      const paymentLink = await stripe.paymentLinks.create({
+          line_items: [
+              {
+                  price: priceObj.id,
+                  quantity: quantity || 1 // Default to 1 if not provided,
+              },
+          ],
+      }, { stripeAccount: stripeAccountId });
+
+      res.json({
+        success: true,
+        paymentLink: paymentLink.url,
+      });
+  } catch (error) {
+      console.error('Error creating payment link:', error);
+      return res.status(500).json({ error: 'Failed to create payment link' });
+  }
+});
+
+
 // Serialize the serviceVendor's sessions for Passport
 passport.serializeUser((user, done) => {
   done(null, user.id);
