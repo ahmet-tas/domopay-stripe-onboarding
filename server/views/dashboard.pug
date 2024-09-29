@@ -1,7 +1,20 @@
 extends layout
 
 block header
-  if showBanner
+  if paymentLink
+    .banner
+      .message
+        strong Bezahllink erfolgreich erstellt! &nbsp;
+        span.secondary-text= paymentLink
+        button.copy-payment-link(data-clipboard-text=paymentLink) &nbsp;
+                      img(src="/images/copy.svg", alt="Bezahllink kopieren")
+  else if showBanner
+    .banner
+      .message
+        strong Klasse! Ihr Zugang ist nun eingerichtet. 
+        span.secondary-text Fangen Sie gleich an mit Ihren Leistungen Geld zu verdienen.
+
+  if showPaymentLinkBanner
     .banner
       .message
         strong Klasse! Ihr Zugang ist nun eingerichtet. 
@@ -29,6 +42,31 @@ block content
           input(class='primary' type='submit', value='Auszahlung anfordern' disabled=(balanceAvailable===0))
         p
           a(href='/serviceVendors/stripe/dashboard') Auszahlungen in Stripe öffnen
+    section.payment-links
+      h4 Stripe Bezahllinks
+      fieldset
+        legend Produkte
+        each product in products
+              .row
+                .cell.name #{product.name}
+                  span.product-id &nbsp;
+                    button.copy-product-id(data-clipboard-text=product.id)
+                      img(src="/images/copy.svg", alt="Produkt-ID kopieren")
+                .cell.price €#{(product.price / 100).toFixed(2)}
+                .cell.actions
+                  form(action="/serviceVendors/stripe/paymentLink", method="POST")
+                    input(type="hidden", name="priceId", value=product.priceId)
+                    button.create-payment-link.button-secondary(type="submit") Link erstellen
+                    input.custom-amount(type="number", name="quantity", min="1", value="1")
+      fieldset
+        legend Benutzerdefiniertes Produkt
+        .row
+          .cell.name
+            input.custom-product-text(type="text", placeholder="Produktname")
+          .cell.price
+            input.custom-product-price(type="number", min="0", step="0.01", placeholder="Preis")
+          .cell.actions
+            button.create-custom-payment-link.button-secondary Link erstellen
     section.offerings
       h4 Vergangene Aufträge
       if offerings.length > 0
@@ -44,15 +82,14 @@ block content
           h1 Bisher keine Aufträge
           h2 &nbsp;
 block footer
-  .annotation.card.dashboard-banner(class=(showBanner ? '' : 'hidden'))
-    h4 The Connect Express onboarding flow is now complete. 
-      a.show-more(href="#") &nbsp;(show more)
-    .description
-      p Express includes the #[strong Stripe account ID] that was just created, so after the flow redirects to domopay we can save it to the database.
-      p This account ID can then be used to #[a(href="https://stripe.com/docs/api/balance/balance_retrieve" target="_blank") retrieve the serviceVendor’s balance], provide a #[a(href="https://stripe.com/docs/connect/destination-charges" target="_blank") destination for payments], or #[a(href="https://stripe.com/docs/connect/payouts" target="_blank") create payouts].
-    form.right
-      button.primary-action.next Next step
-  .annotation.card.dashboard-simulate(class=(showBanner ? 'hidden' : ''))
+  .annotation.card.dashboard-banner.payment-link-popup(class=(paymentLink ? '' : 'hidden'))
+    //button.close-popup(type="button") &times;
+    h4 Bezahllink erstellt
+    p Der Stripe Bezahllink wurde erfolgreich estellt::
+    p.payment-link= paymentLink
+    button.copy-payment-link(data-clipboard-text=paymentLink) Link kopieren
+
+  .annotation.card.dashboard-simulate.hidden(class=(showBanner ? 'hidden' : ''))
     h4 Simulate a customer offering to create a payment for this serviceVendor.
       a.show-more(href="#") &nbsp;(show more)
     .description
@@ -62,3 +99,19 @@ block footer
         li #[strong Pay out now] uses the Stripe API to #[a(href="https://stripe.com/docs/connect/payouts" target="_blank") generate a payout] of the available balance.
     form.right(action='/serviceVendors/offerings', method='POST', autocomplete='off')
       input(type='submit', name="immediate_balance", value='Auftrag erstellen', class='primary-action')
+
+
+
+
+    script.
+      document.querySelector('.copy-payment-link')?.addEventListener('click', function() {
+        const paymentLink = this.getAttribute('data-clipboard-text');
+        navigator.clipboard.writeText(paymentLink);
+      });
+
+      document.querySelectorAll('.copy-product-id').forEach(button => {
+        button.addEventListener('click', () => {
+          const productId = button.dataset.clipboardText;
+          navigator.clipboard.writeText(productId);
+        });
+      });

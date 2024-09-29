@@ -810,6 +810,127 @@ form a.button {
   display: none;
 }
 
+/* Payment Links */
+.payment-links {
+  width: 100%;
+  margin: 0 auto 30px;
+  align-items: flex-start;
+}
+
+.payment-links h4 {
+  margin-bottom: 14px;
+  color: #292f45;
+  font-weight: 500;
+}
+
+.payment-links fieldset {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.payment-links legend {
+  padding: 0 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #525f7f;
+}
+
+.payment-links .row {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  padding: 12px 20px;
+}
+
+.payment-links .row + .row {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.payment-links .cell {
+  flex: 1;
+  position: relative;
+  font-size: 15px;
+}
+
+.payment-links .cell.name {
+  flex: 2;
+  color: #313b3f;
+  font-weight: 500;
+}
+
+.payment-links .cell.price {
+  flex: 1;
+  color: #82909b;
+  text-align: right;
+}
+
+.payment-links .cell.actions {
+  flex: 2;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.payment-links .cell.actions button {
+  margin: 0 0 0 10px;
+  padding: 6px 12px;
+  font-size: 13px;
+  min-width: auto;
+}
+
+.payment-links .cell.actions input[type="number"] {
+  width: 60px;
+  margin-left: 10px;
+  padding: 6px;
+  font-size: 13px;
+  text-align: center;
+  border: 1px solid #cfd7df;
+  border-radius: 4px;
+}
+
+.button-secondary {
+  display: inline-block;
+  padding: 6px 12px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #54B5D5;
+  background-color: #fff;
+  border: 1px solid #54B5D5;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.button-secondary:hover {
+  background-color: #54B5D5;
+  color: #fff;
+}
+
+.copy-product-id, .copy-payment-link {
+  display: inline;
+  width: min-content;
+  margin: auto 10px;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  vertical-align: middle;
+}
+
+.copy-product-id img, .copy-payment-link img {
+  width: 20px;
+  margin: 5px;
+  vertical-align: top;
+}
+
+.create-payment-link {
+  display: inline-block;
+  width: auto;
+}
+
 /* Offering history */
 .offerings {
   width: 100%;

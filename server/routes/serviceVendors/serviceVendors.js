@@ -58,6 +58,26 @@ router.get('/dashboard', serviceVendorRequired, async (req, res) => {
   }, 0);
   const [showBanner] = req.flash('showBanner');
   
+  //Fetch the serviceVendor's products
+  const products = await stripe.products.list({ stripeAccount: serviceVendor.stripeAccountId });
+
+  //Create a list of products & prices and return them as simple list (but we need the product id as well)
+  const productsWithPrices = [];
+  for (const product of products.data) {
+    const prices = await stripe.prices.list({ product: product.id, stripeAccount: serviceVendor.stripeAccountId });
+
+    //find the default price for the product
+    const defaultPrice = prices.data.find(price => price.id === product.default_price);
+
+    productsWithPrices.push({
+      name: product.name,
+      id: product.id,
+      price: defaultPrice.unit_amount,
+      priceId: defaultPrice.id
+    });
+  }
+  
+
   // There is one balance for each currencies used: as this 
   // demo app only uses USD we'll just use the first object
   res.render('dashboard', {
@@ -69,6 +89,8 @@ router.get('/dashboard', serviceVendorRequired, async (req, res) => {
     offerings: offerings,
     rides: offerings,
     showBanner: !!showBanner || req.query.showBanner,
+    products: productsWithPrices,
+    paymentLink: req.query.paymentLink,
   });
 });
 
@@ -269,36 +291,6 @@ router.get('/offerings', authenticate, async (req, res) => {
     const products = await stripe.products.list({}, { stripeAccount: stripeAccountId });
 
     res.json({ products });
-  } catch (error) {
-    console.error('Error creating Payment Link:', error);
-    res.status(500).json({ error: 'Failed to create payment link' });
-  }
-});
-
-/**
- * POST /serviceVendors/paymentLink
- *
- * Create new payment link for the request Stripe priceId
- */
-router.post('/paymentLink', authenticate, async (req, res) => {
-  const { priceId, quantity } = req.body;
-
-  try {
-    const serviceVendor = req.user;  // The authenticated user (connected account)
-    const stripeAccountId = serviceVendor.stripeAccountId; // The Stripe account ID of the connected account
-
-    const paymentLink = await stripe.paymentLinks.create({
-      line_items: [{
-          price: priceId,
-          quantity: quantity,
-        }]
-      }, { stripeAccount: stripeAccountId });
-
-    // Return the Payment Link URL (this is the long-lived link you want)
-    res.json({
-      success: true,
-      paymentLink: paymentLink.url,
-    });
   } catch (error) {
     console.error('Error creating Payment Link:', error);
     res.status(500).json({ error: 'Failed to create payment link' });

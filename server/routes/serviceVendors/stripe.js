@@ -206,4 +206,32 @@ router.post('/payout', serviceVendorRequired, async (req, res) => {
   res.redirect('/serviceVendors/dashboard');
 });
 
+/**
+ * POST /serviceVendors/stripe/paymentLink
+ *
+ * Create new payment link for the request Stripe priceId
+ */
+router.post('/paymentLink', serviceVendorRequired, async (req, res) => {
+  const { priceId, quantity } = req.body;
+
+  try {
+    const serviceVendor = req.user;  // The authenticated user (connected account)
+    const stripeAccountId = serviceVendor.stripeAccountId; // The Stripe account ID of the connected account
+
+    const paymentLink = await stripe.paymentLinks.create({
+      line_items: [{
+          price: priceId,
+          quantity: parseInt(quantity),
+        }]
+      }, { stripeAccount: stripeAccountId });
+
+    // Redirect back to the dashboard with the payment link as a query parameter
+    res.redirect(`/serviceVendors/dashboard?paymentLink=${encodeURIComponent(paymentLink.url)}`);
+  } catch (error) {
+    console.error('Error creating Payment Link:', error);
+    res.redirect('/serviceVendors/dashboard');
+  }
+});
+
+
 module.exports = router;
