@@ -307,7 +307,7 @@ router.post('/paymentLink/product', authenticate, async (req, res) => {
   }
 
   //validate quantity
-  if (quantity && (isNaN(quantity) || quantity <= 0)) {
+  if (isNaN(quantity) || quantity <= 0) {
       return res.status(400).json({ error: 'Invalid quantity' });
   }
 
@@ -335,6 +335,7 @@ router.post('/paymentLink/product', authenticate, async (req, res) => {
       res.json({
         success: true,
         paymentLink: paymentLink.url,
+        paymentLinkId: paymentLink.id,
       });
   } catch (error) {
       console.error('Error creating payment link:', error);
