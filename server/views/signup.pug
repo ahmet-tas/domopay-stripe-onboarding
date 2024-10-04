@@ -33,11 +33,11 @@ block content
 
           h4.serviceVendor-header#account-info Persönliche Daten
           fieldset
-            .row.serviceVendor-info.individual(label='* Vorname')
+            .row.serviceVendor-info.individual.hidden(label='* Vorname')
               input(type='text', name='firstName', placeholder='Sepp')
-            .row.serviceVendor-info.individual(label='* Nachname')
+            .row.serviceVendor-info.individual.hidden(label='* Nachname')
               input(type='text', name='lastName', placeholder='Maier')
-            .row.serviceVendor-info.company.hidden(label='* Firmenname')
+            .row.serviceVendor-info.company(label='* Firmenname')
               input(type='text', name='businessName', placeholder='Hausverwaltung Maier GmbH')
             .row.select(label='Land')
               select(name='country')
@@ -48,7 +48,8 @@ block content
           
           h4 Produkt Informationen
           .product-information
-            p Für einen einfachen Start haben wir eine Liste an Standardprodukten für Sie definiert. Geben Sie einfach an zu welchem Preis Sie Ihre Dienstleistungen anbieten.
+            p Für einen einfachen Start haben wir eine Liste an Standardprodukten für Sie definiert. 
+            p Geben Sie einfach an zu welchem Preis Sie Ihre Dienstleistungen anbieten.
           fieldset
             .row(label='Pro Bescheinigung')
               input(type='number', name='rocket[model]', min='5', max='100', placeholder='€ 20')
@@ -56,7 +57,7 @@ block content
               input(type='number', name='rocket[license]', min='5', placeholder='€ 100')
             .row(label='Pro Stunde')
               input(type='number', name='rocket[color]', min='5', placeholder='€ 100')
-          aside * Pro Transaktion behalten wir uns #[strong € 3] als Entgelt ein.
+          aside * Pro Transaktion behalten wir uns #[strong € XX] als Entgelt ein.
 
           h4 Zahlungsinformationen
           .stripe-information

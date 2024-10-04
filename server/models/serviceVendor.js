@@ -14,7 +14,7 @@ const ServiceVendorSchema = new Schema({
     validate: {
       // Custom validator to check if the email was already used.
       validator: ServiceVendorEmailValiidator,
-      message: 'This email already exists. Please try to log in instead.',
+      message: 'Diese Email ist bereits registriert.',
     }
   },
   password: {
