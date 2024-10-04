@@ -65,9 +65,9 @@ router.get('/dashboard', serviceVendorRequired, async (req, res) => {
   const productsWithPrices = [];
   for (const product of products.data) {
     const prices = await stripe.prices.list({ product: product.id, stripeAccount: serviceVendor.stripeAccountId });
-
-    //find the default price for the product
-    const defaultPrice = prices.data.find(price => price.id === product.default_price);
+    
+    //search for the default price. if the default price is not found, use the first price in the list
+    const defaultPrice = await stripe.prices.retrieve(product.default_price, { stripeAccount: serviceVendor.stripeAccountId }) || prices.data[0];
 
     productsWithPrices.push({
       name: product.name,
@@ -300,6 +300,8 @@ router.get('/offerings', authenticate, async (req, res) => {
 // Create a payment link based on an existing product ID
 router.post('/paymentLink/product', authenticate, async (req, res) => {
   const { productId, unitPrice, quantity, requireAddress = false } = req.body;
+
+  console.log('Creating payment link for product:', productId, 'with price:', unitPrice, 'and quantity:', quantity);
 
   // Input validation
   if (!productId || !unitPrice || isNaN(unitPrice) || unitPrice <= 0) {
