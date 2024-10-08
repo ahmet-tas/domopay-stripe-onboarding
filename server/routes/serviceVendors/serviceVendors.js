@@ -219,7 +219,10 @@ router.post('/signup', async (req, res, next) => {
         type: body.type,
         stripeAccountId: body.stripeAccountId,
       });
+
+      console.log('Storing new serviceVendor:', serviceVendor);
       serviceVendor = await serviceVendor.save();
+
 
       // Log in the new serviceVendor and redirect to the signup process continuation
       req.logIn(serviceVendor, err => {
@@ -332,6 +335,21 @@ router.post('/paymentLink/product', authenticate, async (req, res) => {
                   quantity: quantity || 1 // Default to 1 if not provided,
               },
           ],
+          billing_address_collection: 'required',
+          consent_collection: {
+            //terms_of_service: 'required',
+          },
+          invoice_creation: {
+            enabled: true,
+            invoice_data: {
+            },
+          },
+          payment_method_types: ['card', 'bancontact', 'sofort', 'giropay', 'ideal', 'p24', 'sepa_debit', 'eps'],
+          restrictions: {
+            completed_sessions: {
+              limit: 1,
+            }
+          },
       }, { stripeAccount: stripeAccountId });
 
       res.json({
