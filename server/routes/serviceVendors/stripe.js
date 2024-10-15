@@ -84,6 +84,48 @@ router.get('/authorize', serviceVendorRequired, async (req, res, next) => {
   }
 });
 
+async function createStripeProducts(stripeAccountId, certificationRate, keyRate, hourRate) {
+  console.log('Creating initial products for Stripe account:', stripeAccountId);
+  
+  // Define product templates using the vendor's rates
+  const products = [
+    {
+      name: 'Bescheinigungen',
+      description: 'Bescheinigungen, wie z. B. Wohungsgeberbescheinigung, Mietschuldenfreiheitsbescheinigung, ...',
+      default_price_data: {
+        currency: 'eur',
+        unit_amount: certificationRate * 100, // Convert to cents
+      },
+    },
+    {
+      name: 'Schlüssel',
+      description: 'Schlüsselbestellungen und -nachbestellungen',
+      default_price_data: {
+        currency: 'eur',
+        unit_amount: keyRate * 100, // Convert to cents
+      },
+    },
+    {
+      name: 'Stundenrate',
+      description: 'Stundenrate für individuelle Dienstleistungen',
+      default_price_data: {
+        currency: 'eur',
+        unit_amount: hourRate * 100, // Convert to cents
+      },
+    },
+  ];
+
+  for (const product of products) {
+    await stripe.products.create({
+      name: product.name,
+      description: product.description,
+      default_price_data: product.default_price_data,
+    }, {
+      stripeAccount: stripeAccountId
+    });
+  }
+}
+
 /**
  * GET /serviceVendors/stripe/onboarded
  *
@@ -97,44 +139,12 @@ router.get('/onboarded', serviceVendorRequired, async (req, res, next) => {
       req.user.onboardingComplete = true;
       await req.user.save();
 
+      // Pass in the vendor's specific rates for product creation
+      const { certificationRate, keyRate, hourRate } = req.user.products;
+      await createStripeProducts(req.user.stripeAccountId, certificationRate, keyRate, hourRate);
+
       // Redirect to the domopay dashboard
       req.flash('showBanner', 'true');
-
-      // Create a few dummy products in the Stripe account
-      const products = [
-        {
-          name: 'Bescheinigung',
-          description: 'Wohungsgeberbescheinigung, Mietschuldenfreiheitsbescheinigung, etc.',
-          default_price_data: {
-            currency: 'eur',
-            unit_amount: 2000
-          },
-        },
-/*         {
-          name: 'Schlüssel',
-          description: 'Schlüsselbestellung, Schlüsselverlust, etc.',
-          amount: 50,
-          currency: 'eur',
-          type: 'service'
-        },
-        {
-          name: 'Stundenlohn',
-          description: 'Handwerker, Reinigungskraft, etc.',
-          amount: 100,
-          currency: 'eur',
-          type: 'service'
-        } */
-      ];
-
-      for (const product of products) {
-        await stripe.products.create({
-          name: product.name,
-          description: product.description,
-          default_price_data: product.default_price_data,
-        }, {
-          stripeAccount: req.user.stripeAccountId
-        });
-      }
 
       res.redirect('/serviceVendors/dashboard');
     } else {

@@ -15,7 +15,7 @@ block content
         form(method='POST', autocomplete='off')
           fieldset
             .row(label='Email')
-              input(type='email', name='email', placeholder='sepp.maier@meine-firma.de', required, autofocus)
+              input(type='email', name='email', placeholder='max.mustermann@meine-firma.de', required, autofocus)
             .row(label='Passwort')
               input(type='password', name='password', placeholder='••••••••', required)
           input.primary(type='submit', value='Fortfahren')
@@ -34,30 +34,31 @@ block content
           h4.serviceVendor-header#account-info Persönliche Daten
           fieldset
             .row.serviceVendor-info.individual.hidden(label='* Vorname')
-              input(type='text', name='firstName', placeholder='Sepp')
+              input(type='text', name='firstName', placeholder='Max')
             .row.serviceVendor-info.individual.hidden(label='* Nachname')
-              input(type='text', name='lastName', placeholder='Maier')
+              input(type='text', name='lastName', placeholder='Mustermann')
             .row.serviceVendor-info.company(label='* Firmenname')
-              input(type='text', name='businessName', placeholder='Hausverwaltung Maier GmbH')
+              input(type='text', name='businessName', placeholder='Hausverwaltung Mustermann GmbH')
             .row.select(label='Land')
               select(name='country')
-                option(value='AT') Österreich
                 option(value='DE', selected=true) Deutschland
+                option(value='AT') Österreich
                 option(value='CH') Switzerland
           aside * Pflichtfeld
           
           h4 Produkt Informationen
           .product-information
             p Für einen einfachen Start haben wir eine Liste an Standardprodukten für Sie definiert. 
-            p Geben Sie einfach an zu welchem Preis Sie Ihre Dienstleistungen anbieten.
+            p Geben Sie einfach an zu welchem Preis Sie Ihre Dienstleistungen anbieten. 
+            p #[strong Sie können die Preise jederzeit anpassen.]
           fieldset
             .row(label='Pro Bescheinigung')
-              input(type='number', name='rocket[model]', min='5', max='100', placeholder='€ 20')
+              input(type='number', name='products[certificationRate]', min='5', placeholder='€ 20')
             .row(label='Pro Schlüssel')
-              input(type='number', name='rocket[license]', min='5', placeholder='€ 100')
+              input(type='number', name='products[keyRate]', min='5', placeholder='€ 100')
             .row(label='Pro Stunde')
-              input(type='number', name='rocket[color]', min='5', placeholder='€ 100')
-          aside * Pro Transaktion behalten wir uns #[strong € XX] als Entgelt ein.
+              input(type='number', name='products[hourRate]', min='5', placeholder='€ 100')
+          aside * Pro Transaktion behalten wir uns #[strong % XX] als Entgelt ein.
 
           h4 Zahlungsinformationen
           .stripe-information

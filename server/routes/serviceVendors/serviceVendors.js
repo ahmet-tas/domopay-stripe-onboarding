@@ -175,6 +175,7 @@ router.post('/offerings', serviceVendorRequired, async (req, res, next) => {
  * GET /serviceVendors/signup
  *
  * Display the signup form on the right step depending on the current completion.
+ * Called when the serviceVendor was stored in the DB after initial signup.
  */
 router.get('/signup', (req, res) => {
   let step = 'account';
@@ -199,6 +200,7 @@ router.get('/signup', (req, res) => {
  * POST /serviceVendors/signup
  *
  * Create a user and update profile information during the serviceVendor onboarding process.
+ * Entered when user submits the signup form.
  */
 router.post('/signup', async (req, res, next) => {
   const body = Object.assign({}, req.body, {
@@ -218,6 +220,12 @@ router.post('/signup', async (req, res, next) => {
         apiKey: crypto.randomBytes(20).toString('hex'), // Generate and assign API key
         type: body.type,
         stripeAccountId: body.stripeAccountId,
+        products: 
+        {
+          certificationRate: body.certificationRate,
+          keyRate: body.keyRate,
+          hourRate: body.hourRate
+        }
       });
 
       console.log('Storing new serviceVendor:', serviceVendor);

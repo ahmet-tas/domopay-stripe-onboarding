@@ -34,6 +34,11 @@ const ServiceVendorSchema = new Schema({
   state: { type: String}, 
   country: { type: String, default: 'DE' },
   created: { type: Date, default: Date.now },
+  products: {
+    certificationRate: Number,
+    keyRate: Number,
+    hourRate: Number,
+  },
   rocket: {
     model: String,
     license: String,
