@@ -24,10 +24,10 @@ block content
     .user
       .block.profile
         .photo
-        p Konto seit #{moment(serviceVendor.created).format('MMM YYYY')}
+        p Konto seit #{moment(serviceVendor.created).format('MM/YYYY')}
         h1 #{serviceVendor.displayName()}
-        h2
-          a(href='/serviceVendors/stripe/dashboard?account=true') Stripe Account anzeigen
+        p API Key für fluks:
+        h2 #{serviceVendor.apiKey}
 
       .block.week
         p Diese Woche
@@ -38,10 +38,12 @@ block content
         h1 #{balanceCurrency}#{((balanceAvailable + balancePending) / 100).toFixed(2)}
         h2  #{balanceCurrency}#{(balanceAvailable / 100).toFixed(2)} verfügbar
       .block.stripe
-        form.payout(action='/serviceVendors/stripe/payout', method='POST', autocomplete='off')
-          input(class='primary' type='submit', value='Auszahlung anfordern' disabled=(balanceAvailable===0))
         p
-          a(href='/serviceVendors/stripe/dashboard') Auszahlungen in Stripe öffnen
+          a.button.primary(
+            href='/serviceVendors/stripe/dashboard'
+            style={'color':'white', 'text-transform':'none', 'font-weight':'normal', 'margin':0}
+          )  Stripe öffnen
+            
     section.payment-links
       h4 Stripe Bezahllinks
       fieldset
@@ -50,15 +52,16 @@ block content
               .row
                 .cell.name #{product.name}
                   span.product-id &nbsp;
-                    button.copy-product-id(data-clipboard-text=product.id)
+                    button.copy-product-id.tooltip(data-clipboard-text=product.id)
                       img(src="/images/copy.svg", alt="Produkt-ID kopieren")
+                      span.tooltiptext Produkt-ID: #{product.id} kopieren
                 .cell.price €#{(product.price / 100).toFixed(2)}
                 .cell.actions
                   form(action="/serviceVendors/stripe/paymentLink", method="POST")
                     input(type="hidden", name="priceId", value=product.priceId)
                     button.create-payment-link.button-secondary(type="submit") Link erstellen
                     input.custom-amount(type="number", name="quantity", min="1", value="1")
-      fieldset
+      //-fieldset
         legend Benutzerdefiniertes Produkt
         .row
           .cell.name
