@@ -77,9 +77,8 @@ router.get('/dashboard', serviceVendorRequired, async (req, res) => {
       } else {
         // If the product doesn't have a default price set, list associated prices
         const prices = await stripe.prices.list({
-          product: product.id, 
-          stripeAccount: serviceVendor.stripeAccountId 
-        });
+          product: product.id
+        }, { stripeAccount: serviceVendor.stripeAccountId });
 
         // Select the first available price from the list as a fallback
         // Note: Ensure there is at least one price; otherwise, handle the null case appropriately
@@ -333,6 +332,7 @@ router.get('/offerings', authenticate, async (req, res) => {
 router.post('/paymentLink/customproduct', authenticate, async (req, res) => {
   try {
     const { productTitle, productDescription, totalPrice } = req.body;
+    console.log('Creating custom payment link for: "' + productTitle + '" with price: ' + totalPrice);
 
     // Input validation
     if (!productTitle || !productDescription || !totalPrice) {
@@ -358,7 +358,7 @@ router.post('/paymentLink/customproduct', authenticate, async (req, res) => {
 
 
     // Create payment link
-    const paymentLink = await createStripeProducts(priceObject, 1, stripeAccountId);
+    const paymentLink = await createStripeProducts(priceObject.id, 1, stripeAccountId);
 
     res.json({
       success: true,
@@ -379,34 +379,58 @@ router.post('/paymentLink/product', authenticate, async (req, res) => {
   console.log('Creating payment link for product:', productId, 'with price:', unitPrice, 'and quantity:', quantity);
 
   // Input validation
-  if (!productId || !unitPrice || isNaN(unitPrice) || unitPrice <= 0) {
-      return res.status(400).json({ error: 'Invalid product ID or price' });
+  if (!productId) {
+      return res.status(400).json({ error: 'Product ID ist erforderlich' });
   }
 
-  //validate quantity
-  if (isNaN(quantity) || quantity <= 0) {
-      return res.status(400).json({ error: 'Invalid quantity' });
-  }
+  // Validate optional quantity
+  const validatedQuantity = (quantity && !isNaN(quantity) && quantity > 0) ? parseInt(quantity) : 1; // Default to 1 if not provided
 
   try {
     const serviceVendor = req.user;  // The authenticated user (connected account)
     const stripeAccountId = serviceVendor.stripeAccountId; // The Stripe account ID of the connected account
+    let priceId;
 
-      // Create a price object for the existing product
+    if (unitPrice && !isNaN(unitPrice) && unitPrice > 0) {
+      // Create a new price if unitPrice is provided
       const priceObj = await stripe.prices.create({
-          unit_amount: unitPrice * 100, // Convert to cents
-          currency: 'eur',
-          product: productId,
+        unit_amount: parseInt(unitPrice) * 100, // Convert to cents
+        currency: 'eur',
+        product: productId,
       }, { stripeAccount: stripeAccountId });
+      priceId = priceObj.id;
+    } else {
+      // Retrieve the product object for the given ID
+      const product = await stripe.products.retrieve(productId, { stripeAccount: stripeAccountId });
+      if (!product) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
 
-      // Create payment link
-      const paymentLink = await createStripeProducts(priceObj, quantity, stripeAccountId);
+      priceId = product.default_price;
 
-      res.json({
-        success: true,
-        paymentLink: paymentLink.url,
-        paymentLinkId: paymentLink.id,
-      });
+      if(!priceId) {
+        // Retrieve existing price for the product if unitPrice is not provided
+        const prices = await stripe.prices.list({
+          product: productId
+        }, { stripeAccount: stripeAccountId });
+        
+        if (prices.data.length === 0) {
+          return res.status(400).json({ error: 'No existing price found for the specified product.' });
+        }
+        
+        // Use the first available price or customize selection as needed
+        priceId = prices.data[0].id;
+      }
+    }
+
+    // Create payment link
+    const paymentLink = await createStripeProducts(priceId, validatedQuantity, stripeAccountId);
+
+    res.json({
+      success: true,
+      paymentLink: paymentLink.url,
+      paymentLinkId: paymentLink.id,
+    });
   } catch (error) {
       console.error('Error creating payment link:', error);
       return res.status(500).json({ error: 'Failed to create payment link' });
@@ -448,11 +472,11 @@ passport.use('serviceVendor-login', new LocalStrategy({
 }));
 
 /// Create a new payment link for the request Stripe priceId
-async function createStripeProducts(priceObject, quantity, stripeAccountId){
+async function createStripeProducts(priceId, quantity, stripeAccountId){
   return await stripe.paymentLinks.create({
     line_items: [
         {
-            price: priceObject.id,
+            price: priceId,
             quantity: quantity || 1 // Default to 1 if not provided,
         },
     ],
