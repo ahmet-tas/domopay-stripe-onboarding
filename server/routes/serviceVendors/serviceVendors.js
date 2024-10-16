@@ -327,7 +327,7 @@ router.post('/paymentLink/customproduct', authenticate, async (req, res) => {
 
     // Create a Price object with custom product data
     const priceObject = await stripe.prices.create({
-      unit_amount: parseInt(amount),
+      unit_amount: parseInt(totalPrice),
       currency: 'eur',
       product_data: {
         name: productTitle,
