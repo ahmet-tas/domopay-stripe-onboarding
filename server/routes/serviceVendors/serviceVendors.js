@@ -61,37 +61,59 @@ router.get('/dashboard', serviceVendorRequired, async (req, res) => {
   //Fetch the serviceVendor's products
   const products = await stripe.products.list({ stripeAccount: serviceVendor.stripeAccountId });
 
-  //Create a list of products & prices and return them as simple list (but we need the product id as well)
-  const productsWithPrices = [];
-  for (const product of products.data) {
-    const prices = await stripe.prices.list({ product: product.id, stripeAccount: serviceVendor.stripeAccountId });
-    
-    //search for the default price. if the default price is not found, use the first price in the list
-    const defaultPrice = await stripe.prices.retrieve(product.default_price, { stripeAccount: serviceVendor.stripeAccountId }) || prices.data[0];
+  try {
+    //Create a list of products & prices and return them as simple list (but we need the product id as well)
+    const productsWithPrices = [];
+    for (const product of products.data) {
+      
+      // Attempt to retrieve the default price for the product
+      let defaultPrice;
 
-    productsWithPrices.push({
-      name: product.name,
-      id: product.id,
-      price: defaultPrice.unit_amount,
-      priceId: defaultPrice.id
+      if (product.default_price) {
+        // If the product has a default price, retrieve it directly
+        defaultPrice = await stripe.prices.retrieve(product.default_price, { 
+          stripeAccount: serviceVendor.stripeAccountId
+        });
+      } else {
+        // If the product doesn't have a default price set, list associated prices
+        const prices = await stripe.prices.list({
+          product: product.id, 
+          stripeAccount: serviceVendor.stripeAccountId 
+        });
+
+        // Select the first available price from the list as a fallback
+        // Note: Ensure there is at least one price; otherwise, handle the null case appropriately
+        defaultPrice = prices.data[0];
+      }
+
+      //search for the default price. if the default price is not found, use the first price in the list
+      productsWithPrices.push({
+        name: product.name,
+        id: product.id,
+        price: defaultPrice.unit_amount,
+        priceId: defaultPrice.id
+      });
+    }
+
+
+
+    res.render('dashboard', {
+      serviceVendor: serviceVendor,
+      balanceAvailable: balance.available[0].amount,
+      balancePending: balance.pending[0].amount,
+      offeringsTotalAmount: offeringsTotalAmount,
+      balanceCurrency: getCurrencySymbol(balance.available[0].currency),
+      offerings: offerings,
+      rides: offerings,
+      showBanner: !!showBanner || req.query.showBanner,
+      products: productsWithPrices,
+      paymentLink: req.query.paymentLink,
     });
   }
-  
-
-  // There is one balance for each currencies used: as this 
-  // demo app only uses USD we'll just use the first object
-  res.render('dashboard', {
-    serviceVendor: serviceVendor,
-    balanceAvailable: balance.available[0].amount,
-    balancePending: balance.pending[0].amount,
-    offeringsTotalAmount: offeringsTotalAmount,
-    balanceCurrency: getCurrencySymbol(balance.available[0].currency),
-    offerings: offerings,
-    rides: offerings,
-    showBanner: !!showBanner || req.query.showBanner,
-    products: productsWithPrices,
-    paymentLink: req.query.paymentLink,
-  });
+  catch (err) {
+    console.log('Error fetching products:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
 /**
