@@ -308,9 +308,52 @@ router.get('/offerings', authenticate, async (req, res) => {
   }
 });
 
+router.post('/paymentLink/customproduct', authenticate, async (req, res) => {
+  try {
+    const { productTitle, productDescription, totalPrice } = req.body;
+
+    // Input validation
+    if (!productTitle || !productDescription || !totalPrice) {
+      return res.status(400).json({ message: 'Alle Pflichtfelder füllen' });
+    }
+
+    // validate price
+    if (isNaN(totalPrice) || totalPrice <= 0) {
+      return res.status(400).json({ message: 'Ungültiger Preis' });
+    }
+
+    const serviceVendor = req.user;  // The authenticated user (connected account)
+    const stripeAccountId = serviceVendor.stripeAccountId; // The Stripe account ID of the connected account
+
+    // Create a Price object with custom product data
+    const priceObject = await stripe.prices.create({
+      unit_amount: parseInt(amount),
+      currency: 'eur',
+      product_data: {
+        name: productTitle,
+        unit_amount: totalPrice * 100, // Convert to cents
+      },
+    }, { stripeAccount: stripeAccountId });
+
+
+    // Create payment link
+    const paymentLink = await createStripeProducts(priceObject, 1, stripeAccountId);
+
+    res.json({
+      success: true,
+      paymentLink: paymentLink.url,
+      paymentLinkId: paymentLink.id,
+    });
+
+  } catch (error) {
+    console.error('Error creating custom payment link:', error);
+    return res.status(500).json({ error: 'Failed to create custom payment link' });
+}
+});
+
 // Create a payment link based on an existing product ID
 router.post('/paymentLink/product', authenticate, async (req, res) => {
-  const { productId, unitPrice, quantity, requireAddress = false } = req.body;
+  const { productId, unitPrice, quantity } = req.body;
 
   console.log('Creating payment link for product:', productId, 'with price:', unitPrice, 'and quantity:', quantity);
 
@@ -336,29 +379,7 @@ router.post('/paymentLink/product', authenticate, async (req, res) => {
       }, { stripeAccount: stripeAccountId });
 
       // Create payment link
-      const paymentLink = await stripe.paymentLinks.create({
-          line_items: [
-              {
-                  price: priceObj.id,
-                  quantity: quantity || 1 // Default to 1 if not provided,
-              },
-          ],
-          billing_address_collection: 'required',
-          consent_collection: {
-            //terms_of_service: 'required',
-          },
-          invoice_creation: {
-            enabled: true,
-            invoice_data: {
-            },
-          },
-          payment_method_types: ['card', 'bancontact', 'sofort', 'giropay', 'ideal', 'p24', 'sepa_debit', 'eps'],
-          restrictions: {
-            completed_sessions: {
-              limit: 1,
-            }
-          },
-      }, { stripeAccount: stripeAccountId });
+      const paymentLink = await createStripeProducts(priceObj, quantity, stripeAccountId);
 
       res.json({
         success: true,
@@ -404,6 +425,33 @@ passport.use('serviceVendor-login', new LocalStrategy({
   }
   return done(null, user);
 }));
+
+/// Create a new payment link for the request Stripe priceId
+async function createStripeProducts(priceObject, quantity, stripeAccountId){
+  return await stripe.paymentLinks.create({
+    line_items: [
+        {
+            price: priceObject.id,
+            quantity: quantity || 1 // Default to 1 if not provided,
+        },
+    ],
+    billing_address_collection: 'required',
+    consent_collection: {
+      //terms_of_service: 'required',
+    },
+    invoice_creation: {
+      enabled: true,
+      invoice_data: {
+      },
+    },
+    payment_method_types: ['card', 'bancontact', 'sofort', 'giropay', 'ideal', 'p24', 'sepa_debit', 'eps'],
+    restrictions: {
+      completed_sessions: {
+        limit: 1,
+      }
+    },
+  }, { stripeAccount: stripeAccountId });
+}
 
 // Function that returns a test card token for Stripe
 function getTestSource(behavior) {
