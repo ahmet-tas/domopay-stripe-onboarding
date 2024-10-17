@@ -236,7 +236,7 @@ router.post('/signup', async (req, res, next) => {
     try {
       // Try to create and save a new serviceVendor, including API key generation
       serviceVendor = new ServiceVendor({
-        email: body.email,
+        email: body.email.toLowerCase(),
         password: body.password, 
         apiKey: crypto.randomBytes(20).toString('hex'), // Generate and assign API key
         type: body.type,
@@ -456,6 +456,8 @@ passport.use('serviceVendor-login', new LocalStrategy({
   usernameField: 'email',
   passwordField: 'password'
 }, async (email, password, done) => {
+  email = email.toLowerCase();
+  
   let user;
   try {
     user = await ServiceVendor.findOne({email});
