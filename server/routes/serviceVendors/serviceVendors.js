@@ -331,25 +331,28 @@ router.get('/offerings', authenticate, async (req, res) => {
 
 router.post('/paymentLink/customproduct', authenticate, async (req, res) => {
   try {
-    const { productTitle, productDescription, totalPrice } = req.body;
-    console.log('Creating custom payment link for: "' + productTitle + '" with price: ' + totalPrice);
+    const { productTitle, productDescription, unitPrice, quantity } = req.body;
+    console.log('Creating custom payment link for: "' + productTitle + '" with price: ' + unitPrice + ' and quantity: ' + quantity);
 
     // Input validation
-    if (!productTitle || !productDescription || !totalPrice) {
+    if (!productTitle || !productDescription || !unitPrice) {
       return res.status(400).json({ message: 'Alle Pflichtfelder füllen' });
     }
 
     // validate price
-    if (isNaN(totalPrice) || totalPrice <= 0) {
+    if (isNaN(unitPrice) || unitPrice <= 0) {
       return res.status(400).json({ message: 'Ungültiger Preis' });
     }
+
+    // Validate optional quantity
+    const validatedQuantity = (quantity && !isNaN(quantity) && quantity > 0) ? parseInt(quantity) : 1; // Default to 1 if not provided
 
     const serviceVendor = req.user;  // The authenticated user (connected account)
     const stripeAccountId = serviceVendor.stripeAccountId; // The Stripe account ID of the connected account
 
     // Create a Price object with custom product data
     const priceObject = await stripe.prices.create({
-      unit_amount: parseInt(totalPrice) * 100,  // Convert to cents
+      unit_amount: parseInt(unitPrice) * 100,  // Convert to cents
       currency: 'eur',
       product_data: {
         name: productTitle,
@@ -358,7 +361,7 @@ router.post('/paymentLink/customproduct', authenticate, async (req, res) => {
 
 
     // Create payment link
-    const paymentLink = await createStripeProducts(priceObject.id, 1, stripeAccountId);
+    const paymentLink = await createStripeProducts(priceObject.id, validatedQuantity, stripeAccountId);
 
     res.json({
       success: true,
